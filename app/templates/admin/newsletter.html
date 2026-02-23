@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Newsletter Subscribers{% endblock %}
+{% block content %}
+<div style="margin-bottom:16px;"><strong>{{ subscribers.total }}</strong> subscribers total</div>
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Subscribed</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in subscribers.items %}
+            <tr>
+                <td>{{ s.email }}</td>
+                <td style="font-size:12px;">{{ s.created_at.strftime('%d %b %Y') }}</td>
+                <td><span
+                        style="padding:3px 8px;font-size:10px;background:{{ '#d1fae5;color:#065f46' if s.is_active else '#fee2e2;color:#991b1b' }}">{{
+                        'Active' if s.is_active else 'Unsubscribed' }}</span></td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="3" style="text-align:center;color:#9ca3af;padding:40px;">No subscribers yet</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if subscribers.pages > 1 %}
+<div class="pagination" style="margin-top:16px;">
+    {% for p in subscribers.iter_pages() %}{% if p %}<{% if p==subscribers.page %}span class="current" {% else %}a
+        href="{{ url_for('admin.newsletter_list', page=p) }}" {% endif %}>{{ p }}</{% if p==subscribers.page %}span{%
+        else %}a{% endif %}>{% else %}<span>…</span>{% endif %}{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

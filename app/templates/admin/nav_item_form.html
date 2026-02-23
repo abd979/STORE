@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{{ 'Edit' if item else 'New' }} Navigation Item — ORIAL Admin{% endblock %}
+{% block page_title %}{{ 'Edit Navigation Item' if item else 'New Navigation Item' }}{% endblock %}
+
+{% block content %}
+<div class="admin-card" style="max-width:600px;">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="admin-form-group">
+            <label class="admin-label">Label</label>
+            <input type="text" name="label" class="admin-input" value="{{ item.label if item else '' }}" required
+                placeholder="e.g. Rings">
+            <small style="color:#6b7280;">The text displayed in the menu.</small>
+        </div>
+
+        <div class="admin-form-group">
+            <label class="admin-label">URL or Route Name</label>
+            <input type="text" name="url" class="admin-input" value="{{ item.url if item else '' }}" required
+                placeholder="e.g. shop.products or /about">
+            <small style="color:#6b7280;">Use route name (like <code>shop.products</code>) or a full path (like
+                <code>/blog</code>).</small>
+        </div>
+
+        <div class="admin-form-group">
+            <label class="admin-label">Display Order</label>
+            <input type="number" name="display_order" class="admin-input"
+                value="{{ item.display_order if item else 0 }}">
+            <small style="color:#6b7280;">Lower numbers appear first.</small>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+            <div class="admin-form-group" style="margin-bottom:0;display:flex;align-items:center;gap:12px;">
+                <input type="checkbox" name="is_external" id="is_external" {{ 'checked' if item and item.is_external
+                    else '' }} style="width:18px;height:18px;cursor:pointer;">
+                <label for="is_external" style="cursor:pointer;font-size:14px;">External Link?</label>
+            </div>
+            <div class="admin-form-group" style="margin-bottom:0;display:flex;align-items:center;gap:12px;">
+                <input type="checkbox" name="is_active" id="is_active" {{ 'checked' if not item or item.is_active
+                    else '' }} style="width:18px;height:18px;cursor:pointer;">
+                <label for="is_active" style="cursor:pointer;font-size:14px;">Visible on Site?</label>
+            </div>
+        </div>
+
+        <div class="admin-form-actions">
+            <a href="{{ url_for('admin.navigation') }}" class="admin-btn secondary">Cancel</a>
+            <button type="submit" class="admin-btn primary">{{ 'Save Changes' if item else 'Create Item' }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

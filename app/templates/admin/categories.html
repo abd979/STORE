@@ -1,0 +1,52 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Categories{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+    <a href="{{ url_for('admin.new_category') }}" class="admin-btn primary">+ Add Category</a>
+</div>
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Products</th>
+                <th>Order</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td><strong>{{ cat.name }}</strong>{% if cat.description %}<br><span
+                        style="color:#9ca3af;font-size:11px;">{{ cat.description[:60] }}</span>{% endif %}</td>
+                <td style="font-family:monospace;font-size:12px;">{{ cat.slug }}</td>
+                <td>{{ cat.product_count }}</td>
+                <td>{{ cat.display_order }}</td>
+                <td><span
+                        style="padding:3px 8px;font-size:10px;background:{{ '#d1fae5;color:#065f46' if cat.is_active else '#fee2e2;color:#991b1b' }}">{{
+                        'Active' if cat.is_active else 'Inactive' }}</span></td>
+                <td>
+                    <a href="{{ url_for('admin.edit_category', cid=cat.id) }}" class="admin-btn secondary"
+                        style="margin-right:4px;">Edit</a>
+                    <button onclick="deleteCat({{ cat.id }}, this)" class="admin-btn danger">Delete</button>
+                </td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="6" style="text-align:center;color:#9ca3af;padding:40px;">No categories. <a
+                        href="{{ url_for('admin.new_category') }}">Add one?</a></td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    async function deleteCat(id, btn) {
+        if (!confirm('Archive this category?')) return;
+        const r = await fetch(`/admin/categories/${id}/delete`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' } });
+        if ((await r.json()).success) btn.closest('tr').remove();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — ORIAL{% endblock %}
+{% block content %}
+<div style="margin-top:72px;min-height:80vh;background:var(--off);">
+
+    <!-- STEP INDICATOR -->
+    <div class="checkout-steps-bar">
+        <div class="checkout-steps-inner">
+            {% for label in ['Details','Payment','Review'] %}
+            <div class="step-ind" id="stepInd{{ loop.index }}"
+                style="{% if not loop.last %}border-right:1px solid var(--light-gray);{% endif %} opacity:{% if loop.first %}1{% else %}0.35{% endif %};">
+                <div class="step-circle"
+                    style="background:{% if loop.first %}var(--black){% else %}var(--light-gray){% endif %}; color:{% if loop.first %}white{% else %}var(--gray){% endif %};">
+                    {{ loop.index }}</div>
+                <span class="step-label">{{ label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form method="post" action="{{ url_for('cart.checkout') }}" id="checkoutForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="payment_method" id="paymentMethodInput" value="cod">
+
+        <div class="checkout-container">
+
+            <!-- ══════════ STEP 1: DETAILS ══════════ -->
+            <div id="step1">
+                <div style="background:white;border:1px solid var(--light-gray);padding:40px;">
+                    <h2 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:28px;">
+                        Delivery Details</h2>
+                    <div class="checkout-form-grid">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="full_name" id="fn" value="{{ user.full_name }}"
+                                placeholder="Jane Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone *</label>
+                            <input type="tel" name="phone" id="ph" value="{{ user.phone or '' }}"
+                                placeholder="+92 300 1234567" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label>Email Address *</label>
+                        <input type="email" name="email" id="em" value="{{ user.email }}" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label>Address Line 1 *</label>
+                        <input type="text" name="address1" id="a1" value="{{ user.address_line1 or '' }}"
+                            placeholder="House #, Street, Area" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label>Address Line 2 <span style="color:var(--gray);font-size:11px;">(optional)</span></label>
+                        <input type="text" name="address2" id="a2" value="{{ user.address_line2 or '' }}"
+                            placeholder="Apartment, Floor, etc.">
+                    </div>
+                    <div class="checkout-form-grid">
+                        <div class="form-group">
+                            <label>City *</label>
+                            <input type="text" name="city" id="ct" value="{{ user.city or '' }}" placeholder="Lahore"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Postcode</label>
+                            <input type="text" name="postcode" id="pc" value="{{ user.postcode or '' }}"
+                                placeholder="54000">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:24px;">
+                        <label>Country</label>
+                        <select name="country" id="co">
+                            <option value="Pakistan" {{ 'selected' if (user.country or 'Pakistan' )=='Pakistan' }}>🇵🇰
+                                Pakistan</option>
+                            <option value="United Kingdom" {{ 'selected' if user.country=='United Kingdom' }}>🇬🇧
+                                United Kingdom</option>
+                            <option value="United States" {{ 'selected' if user.country=='United States' }}>🇺🇸 United
+                                States</option>
+                            <option value="Other" {{ 'selected' if user.country=='Other' }}>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:28px;">
+                        <label>Order Notes <span style="color:var(--gray);font-size:11px;">(optional)</span></label>
+                        <textarea name="notes" rows="2" placeholder="Gift message, special delivery instructions…"
+                            style="resize:vertical;"></textarea>
+                    </div>
+                    <button type="button" onclick="goStep2()" class="btn-black"
+                        style="width:100%;justify-content:center;gap:12px;padding:18px;">
+                        <span>Continue to Payment</span><span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══════════ STEP 2: PAYMENT ══════════ -->
+            <div id="step2" style="display:none;">
+                <div style="background:white;border:1px solid var(--light-gray);padding:40px;">
+                    <h2 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:8px;">
+                        Payment Method</h2>
+                    <p style="font-size:13px;color:var(--gray);margin-bottom:28px;">Choose how you'd like to pay</p>
+
+                    <!-- COD -->
+                    <label class="pay-opt" id="optCOD" onclick="selectPayment('cod', this)">
+                        <div style="display:flex;align-items:center;gap:16px;">
+                            <div
+                                style="width:44px;height:44px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;">
+                                🚚</div>
+                            <div>
+                                <div style="font-weight:600;font-size:15px;">Cash on Delivery</div>
+                                <div style="font-size:12px;color:var(--gray);">Pay when your order arrives</div>
+                            </div>
+                        </div>
+                        <div class="pay-check" id="checkCOD">✓</div>
+                    </label>
+
+                    <!-- EASYPAISA -->
+                    <label class="pay-opt" id="optEP" onclick="selectPayment('easypaisa', this)">
+                        <div style="display:flex;align-items:center;gap:16px;">
+                            <div
+                                style="width:44px;height:44px;background:#e8f5e9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;">
+                                📱</div>
+                            <div>
+                                <div style="font-weight:600;font-size:15px;">Easypaisa</div>
+                                <div style="font-size:12px;color:var(--gray);">Mobile wallet transfer</div>
+                            </div>
+                        </div>
+                        <div class="pay-check" id="checkEP">✓</div>
+                    </label>
+
+                    <!-- JAZZCASH -->
+                    <label class="pay-opt" id="optJC" onclick="selectPayment('jazzcash', this)">
+                        <div style="display:flex;align-items:center;gap:16px;">
+                            <div
+                                style="width:44px;height:44px;background:#fff3e0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;">
+                                💛</div>
+                            <div>
+                                <div style="font-weight:600;font-size:15px;">JazzCash</div>
+                                <div style="font-size:12px;color:var(--gray);">Mobile wallet transfer</div>
+                            </div>
+                        </div>
+                        <div class="pay-check" id="checkJC">✓</div>
+                    </label>
+
+                    <!-- MOBILE PAYMENT INSTRUCTIONS (shown for EP/JC) -->
+                    <div id="mobileInstructions"
+                        style="display:none;margin-top:20px;border:1px solid var(--rose);padding:24px;background:var(--rose-pale);">
+                        <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:var(--black);">📋 Payment
+                            Instructions</div>
+                        <div id="accountDetails"
+                            style="background:white;border:1px solid var(--light-gray);padding:16px;margin-bottom:16px;">
+                            <div
+                                style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">
+                                Account Number</div>
+                            <div id="accountNumber"
+                                style="font-family:monospace;font-size:22px;font-weight:700;color:var(--black);letter-spacing:2px;">
+                                0300-1234567</div>
+                            <div id="accountName" style="font-size:12px;color:var(--gray);margin-top:4px;">ORIAL
+                                Jewellery</div>
+                        </div>
+                        <ol
+                            style="font-size:13px;line-height:2.2;color:var(--black);padding-left:20px;margin-bottom:16px;">
+                            <li>Open your <strong id="payAppName">Easypaisa</strong> app</li>
+                            <li>Send exactly <strong>Rs. {{ '%.2f'|format(total) }}</strong> to the account number above
+                            </li>
+                            <li>Take a screenshot of the payment confirmation screen</li>
+                            <li>Send the screenshot on WhatsApp to: <strong
+                                    style="font-family:monospace;font-size:16px;color:var(--black);">0300-1234567</strong>
+                            </li>
+                            <li>Your order will be confirmed once payment is verified ✓</li>
+                        </ol>
+                        <div
+                            style="background:white;border-left:3px solid var(--rose);padding:12px 16px;font-size:12px;color:var(--gray);">
+                            💬 <strong style="color:var(--black);">WhatsApp only.</strong> Please mention your <strong
+                                style="color:var(--black);">name &amp; phone number</strong> in the message.
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:12px;margin-top:28px;">
+                        <button type="button" onclick="goStep1()" class="btn-outline"
+                            style="flex:1;justify-content:center;gap:8px;padding:16px;">
+                            <span>← Back</span>
+                        </button>
+                        <button type="button" onclick="goStep3()" class="btn-black"
+                            style="flex:2;justify-content:center;gap:12px;padding:16px;">
+                            <span>Review Order</span><span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ STEP 3: REVIEW ══════════ -->
+            <div id="step3" style="display:none;">
+                <div style="background:white;border:1px solid var(--light-gray);padding:40px;">
+                    <h2 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:28px;">
+                        Order Review</h2>
+
+                    <!-- Shipping summary -->
+                    <div style="background:var(--off);padding:20px;margin-bottom:20px;">
+                        <div
+                            style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:12px;">
+                            Delivering To</div>
+                        <div id="reviewAddress" style="font-size:14px;line-height:1.8;color:var(--black);"></div>
+                        <button type="button" onclick="goStep1()"
+                            style="font-size:11px;color:var(--rose);background:none;border:none;cursor:pointer;margin-top:8px;text-decoration:underline;">Edit</button>
+                    </div>
+
+                    <!-- Payment summary -->
+                    <div style="background:var(--off);padding:20px;margin-bottom:24px;">
+                        <div
+                            style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:12px;">
+                            Payment</div>
+                        <div id="reviewPayment" style="font-size:14px;font-weight:600;"></div>
+                        <button type="button" onclick="goStep2()"
+                            style="font-size:11px;color:var(--rose);background:none;border:none;cursor:pointer;margin-top:8px;text-decoration:underline;">Change</button>
+                    </div>
+
+                    <!-- Items -->
+                    <div style="border:1px solid var(--light-gray);margin-bottom:24px;">
+                        <div
+                            style="padding:16px 20px;border-bottom:1px solid var(--light-gray);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);">
+                            Your Items</div>
+                        {% for item in items %}
+                        <div
+                            style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;{% if not loop.last %}border-bottom:1px solid var(--light-gray);{% endif %}">
+                            <div>
+                                <div style="font-size:14px;font-weight:500;">{{ item.product.name }}</div>
+                                <div style="font-size:11px;color:var(--gray);">{{ item.product.subtitle }} · Qty: {{
+                                    item.quantity }}</div>
+                            </div>
+                            <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;">Rs. {{
+                                item.subtotal|int }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Totals -->
+                    <div style="border:1px solid var(--light-gray);padding:20px;margin-bottom:28px;">
+                        <div
+                            style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid var(--light-gray);">
+                            <span>Subtotal</span><span>Rs. {{ '%.2f'|format(subtotal) }}</span>
+                        </div>
+                        <div
+                            style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid var(--light-gray);">
+                            <span>Shipping</span><span>{% if shipping == 0 %}Free{% else %}Rs. {{
+                                '%.2f'|format(shipping)
+                                }}{% endif %}</span>
+                        </div>
+                        {% if discount_amount > 0 %}
+                        <div
+                            style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:var(--rose);border-bottom:1px solid var(--light-gray);">
+                            <span>Discount</span><span>−Rs. {{ '%.2f'|format(discount_amount) }}</span>
+                        </div>
+                        {% endif %}
+                        <div
+                            style="display:flex;justify-content:space-between;padding:12px 0 0;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;">
+                            <span>Total</span><span>Rs. {{ '%.2f'|format(total) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- ORIAL promise -->
+                    <div
+                        style="background:var(--rose-pale);padding:16px;font-size:11px;line-height:2;color:var(--gray);margin-bottom:24px;">
+                        <strong style="color:var(--black);">ORIAL Promise</strong><br>
+                        ✦ Lifetime warranty · ✦ 30-day free returns · ✦ Certificate of authenticity
+                    </div>
+
+                    <div style="display:flex;gap:12px;">
+                        <button type="button" onclick="goStep2()" class="btn-outline"
+                            style="flex:1;justify-content:center;padding:16px;">
+                            ← Back
+                        </button>
+                        <button type="submit" id="confirmBtn" class="btn-black"
+                            style="flex:2;justify-content:center;gap:12px;padding:18px;">
+                            <span>✓ Confirm Order</span><span>Rs. {{ '%.2f'|format(total) }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════ SIDEBAR: ORDER MINI-SUMMARY ══════════ -->
+            <div>
+                <div style="background:white;border:1px solid var(--light-gray);padding:28px;position:sticky;top:90px;">
+                    <div
+                        style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--light-gray);">
+                        Your Bag <span style="font-size:14px;color:var(--gray);font-weight:400;">({{ items|length
+                            }})</span></div>
+                    {% for item in items %}
+                    <div style="display:flex;gap:12px;margin-bottom:14px;align-items:center;">
+                        <div
+                            style="width:48px;height:48px;background:{{ item.product.card_bg_css or 'linear-gradient(145deg,#F5EEE8,#E8D5C8)' }};flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:8px;">
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div
+                                style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ item.product.name }}</div>
+                            <div style="font-size:10px;color:var(--gray);">Qty {{ item.quantity }}</div>
+                        </div>
+                        <div style="font-size:13px;font-weight:700;">Rs. {{ item.subtotal|int }}</div>
+                    </div>
+                    {% endfor %}
+                    <div style="border-top:1px solid var(--light-gray);margin-top:16px;padding-top:16px;">
+                        <div
+                            style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray);margin-bottom:6px;">
+                            <span>Subtotal</span><span>Rs. {{ '%.2f'|format(subtotal) }}</span>
+                        </div>
+                        <div
+                            style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray);margin-bottom:6px;">
+                            <span>Shipping</span><span>{% if shipping == 0 %}Free{% else %}Rs. {{
+                                '%.2f'|format(shipping)
+                                }}{% endif %}</span>
+                        </div>
+                        {% if discount_amount > 0 %}<div
+                            style="display:flex;justify-content:space-between;font-size:12px;color:var(--rose);margin-bottom:6px;">
+                            <span>Discount</span><span>−Rs. {{ '%.2f'|format(discount_amount) }}</span>
+                        </div>{% endif %}
+                        <div
+                            style="display:flex;justify-content:space-between;font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-top:8px;">
+                            <span>Total</span><span>Rs. {{ '%.2f'|format(total) }}</span>
+                        </div>
+                    </div>
+                    <div
+                        style="margin-top:16px;padding:12px;background:var(--off);font-size:10px;color:var(--gray);text-align:center;line-height:1.8;">
+                        🔒 Secure checkout</div>
+                </div>
+            </div>
+
+        </div><!-- /grid -->
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .pay-opt {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 20px;
+        border: 2px solid var(--light-gray);
+        cursor: pointer;
+        margin-bottom: 12px;
+        transition: all .2s;
+    }
+
+    .pay-opt:hover {
+        border-color: var(--black);
+    }
+
+    .pay-opt.selected {
+        border-color: var(--black);
+        background: var(--off);
+    }
+
+    .pay-check {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--light-gray);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        transition: background .2s;
+        flex-shrink: 0;
+    }
+
+    .pay-opt.selected .pay-check {
+        background: var(--black);
+    }
+</style>
+
+<script>
+    // ─── Accounts ───────────────────────────────────────────
+    const ACCOUNTS = {
+        easypaisa: { number: '0311-1234567', name: 'ORIAL Jewellery – Easypaisa' },
+        jazzcash: { number: '0312-9876543', name: 'ORIAL Jewellery – JazzCash' }
+    };
+    const ICONS = { easypaisa: '📱 Easypaisa', jazzcash: '💛 JazzCash', cod: '🚚 Cash on Delivery' };
+
+    let currentPayment = 'cod';
+
+    // ─── Step navigation ─────────────────────────────────────
+    function updateIndicator(step) {
+        [1, 2, 3].forEach(i => {
+            const ind = document.getElementById('stepInd' + i);
+            const circle = ind.querySelector('.step-circle');
+            if (i < step) {
+                ind.style.opacity = '1';
+                circle.style.background = 'var(--rose)';
+                circle.style.color = 'white';
+                circle.textContent = '✓';
+            } else if (i === step) {
+                ind.style.opacity = '1';
+                circle.style.background = 'var(--black)';
+                circle.style.color = 'white';
+                circle.textContent = i;
+            } else {
+                ind.style.opacity = '0.35';
+                circle.style.background = 'var(--light-gray)';
+                circle.style.color = 'var(--gray)';
+                circle.textContent = i;
+            }
+        });
+    }
+
+    function goStep1() {
+        document.getElementById('step1').style.display = 'block';
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'none';
+        updateIndicator(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goStep2() {
+        // Validate step 1 fields
+        const required = ['fn', 'ph', 'em', 'a1', 'ct'];
+        for (const id of required) {
+            const el = document.getElementById(id);
+            if (!el.value.trim()) {
+                el.style.borderColor = '#ef4444';
+                el.focus();
+                el.addEventListener('input', () => el.style.borderColor = '', { once: true });
+                return;
+            }
+        }
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+        document.getElementById('step3').style.display = 'none';
+        updateIndicator(2);
+        // Ensure COD is default-selected
+        if (currentPayment === 'cod' || !currentPayment) selectPayment('cod', document.getElementById('optCOD'));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goStep3() {
+
+        // Fill review panel
+        const addr = [
+            document.getElementById('fn').value,
+            document.getElementById('ph').value,
+            document.getElementById('a1').value,
+            document.getElementById('a2').value,
+            document.getElementById('ct').value + (document.getElementById('pc').value ? ', ' + document.getElementById('pc').value : ''),
+            document.getElementById('co').value
+        ].filter(Boolean).join('<br>');
+        document.getElementById('reviewAddress').innerHTML = addr;
+        document.getElementById('reviewPayment').textContent = ICONS[currentPayment] || currentPayment;
+
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'block';
+        updateIndicator(3);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ─── Payment selection ────────────────────────────────────
+    function selectPayment(method, el) {
+        currentPayment = method;
+        document.getElementById('paymentMethodInput').value = method;
+
+        // Reset all
+        ['optCOD', 'optEP', 'optJC'].forEach(id => document.getElementById(id).classList.remove('selected'));
+        el.classList.add('selected');
+
+        const instr = document.getElementById('mobileInstructions');
+        if (method === 'easypaisa' || method === 'jazzcash') {
+            const acc = ACCOUNTS[method];
+            document.getElementById('accountNumber').textContent = acc.number;
+            document.getElementById('accountName').textContent = acc.name;
+            document.getElementById('payAppName').textContent = method === 'easypaisa' ? 'Easypaisa' : 'JazzCash';
+            instr.style.display = 'block';
+        } else {
+            instr.style.display = 'none';
+        }
+    }
+
+    // Init — select COD by default
+    selectPayment('cod', document.getElementById('optCOD'));
+</script>
+{% endblock %}

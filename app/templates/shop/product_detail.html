@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — ORIAL{% endblock %}
+{% block content %}
+<div class="product-detail">
+    <div class="detail-gallery">
+        <div class="gallery-main">
+            {% if product.image_filename %}
+            <img id="mainImage" src="{{ url_for('static', filename='images/' + product.image_filename) }}"
+                alt="{{ product.name }}">
+            {% else %}
+            <div class="gallery-placeholder">No image available</div>
+            {% endif %}
+
+            {% if product.badge %}
+            <div class="gallery-badge-wrap">
+                <span class="badge {{ 'rose' if product.badge_color == 'rose' else '' }}">{{ product.badge }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% set all_imgs = product.all_images %}
+        {% if all_imgs|length > 1 %}
+        <div class="gallery-thumbs">
+            {% for img in all_imgs %}
+            <div class="thumb {% if loop.first %}active{% endif %}"
+                onclick="changeMainImage('{{ url_for('static', filename='images/' + img) }}', this)">
+                <img src="{{ url_for('static', filename='images/' + img) }}" alt="Thumbnail">
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="detail-info">
+        <div class="detail-category">{{ product.category.name }}</div>
+        <h1 class="detail-name">{{ product.name }}</h1>
+        <div class="detail-sub">{{ product.subtitle }}</div>
+        <div class="detail-rating">
+            <span class="stars-lg">{{ product.star_display }}</span>
+            <span style="font-size:13px;color:var(--gray);">{{ product.review_count }} reviews</span>
+        </div>
+        {% if product.is_on_sale %}
+        <div class="detail-orig-price">Rs. {{ product.original_price|int }}</div>
+        {% endif %}
+        <div class="detail-price">Rs. {{ product.price|int }}</div>
+        <p class="detail-desc">{{ product.description or 'A magnificent piece handcrafted in our London studio.' }}</p>
+        {% if product.material or product.gemstone or product.weight %}
+        <div class="detail-specs">
+            {% if product.material %}<div class="spec-row"><span class="spec-label">Material</span><span
+                    class="spec-val">{{ product.material }}</span></div>{% endif %}
+            {% if product.gemstone %}<div class="spec-row"><span class="spec-label">Gemstone</span><span
+                    class="spec-val">{{ product.gemstone }}</span></div>{% endif %}
+            {% if product.weight %}<div class="spec-row"><span class="spec-label">Weight</span><span class="spec-val">{{
+                    product.weight }}</span></div>{% endif %}
+            {% if product.dimensions %}<div class="spec-row"><span class="spec-label">Dimensions</span><span
+                    class="spec-val">{{ product.dimensions }}</span></div>{% endif %}
+            {% if product.sku %}<div class="spec-row"><span class="spec-label">SKU</span><span class="spec-val">{{
+                    product.sku }}</span></div>{% endif %}
+            <div class="spec-row"><span class="spec-label">In Stock</span><span class="spec-val">{{ product.stock }}
+                    available</span></div>
+        </div>
+        {% endif %}
+        {% if product.stock > 0 %}
+        <form class="add-to-cart-form" action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="post"
+            id="addToCartForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="quantity" class="qty-select">
+                {% for i in range(1, [product.stock+1, 11]|min) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+            </select>
+            <button type="submit" class="add-btn">Add to Cart</button>
+            {% if current_user.is_authenticated %}
+            <button type="button" class="wishlist-btn {{ 'active' if in_wishlist else '' }}" id="wishlistBtn"
+                title="{{ 'Remove from wishlist' if in_wishlist else 'Add to wishlist' }}">{{ '♥' if in_wishlist else
+                '♡' }}</button>
+            {% endif %}
+        </form>
+        {% else %}
+        <p
+            style="color:var(--rose);font-size:13px;letter-spacing:1px;text-transform:uppercase;font-weight:500;padding:16px 0;">
+            Out of Stock</p>
+        {% endif %}
+        <a href="{{ url_for('main.bespoke') }}" class="btn-outline" style="margin-top:16px;gap:20px;font-size:11px;">
+            <span>Enquire About Bespoke</span><span>↗</span>
+        </a>
+    </div>
+</div>
+
+<!-- REVIEWS -->
+<section class="detail-extra-section">
+    <h2 style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin-bottom:40px;">Customer Reviews
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;margin-bottom:48px;">
+        {% for review in reviews %}
+        <div class="review-card" style="border:1px solid var(--light-gray);border-bottom:1px solid var(--light-gray);">
+            <div class="review-stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>
+            {% if review.title %}<strong style="font-size:14px;display:block;margin-bottom:8px;">{{ review.title
+                }}</strong>{% endif %}
+            <p class="review-text">{{ review.body }}</p>
+            <div class="review-author">{{ review.author.full_name }} {% if review.is_verified %}<span
+                    style="color:var(--rose);font-size:9px;">✓ Verified</span>{% endif %}</div>
+        </div>
+        {% else %}
+        <p style="color:var(--gray);font-size:13px;">No reviews yet. Be the first to review this piece!</p>
+        {% endfor %}
+    </div>
+    {% if current_user.is_authenticated %}
+    <div style="max-width:560px;border:1px solid var(--light-gray);padding:32px;">
+        <h3 style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:20px;">Write a
+            Review</h3>
+        <form id="reviewForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom:16px;">
+                <label
+                    style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Rating</label>
+                <div id="starRating" style="font-size:28px;cursor:pointer;color:var(--light-gray);">
+                    {% for i in range(1,6) %}<span class="star" data-v="{{ i }}">★</span>{% endfor %}
+                </div>
+                <input type="hidden" name="rating" id="ratingInput">
+            </div>
+            <div style="margin-bottom:16px;"><input type="text" name="title" placeholder="Review title"
+                    class="form-group input"
+                    style="width:100%;padding:12px;border:1px solid var(--light-gray);font-family:'DM Sans',sans-serif;outline:none;">
+            </div>
+            <div style="margin-bottom:16px;"><textarea name="body" rows="4" placeholder="Share your experience…"
+                    style="width:100%;padding:12px;border:1px solid var(--light-gray);font-family:'DM Sans',sans-serif;outline:none;resize:vertical;"></textarea>
+            </div>
+            <button type="submit" class="add-btn" style="padding:14px 32px;width:auto;">Submit Review</button>
+        </form>
+    </div>
+    {% endif %}
+</section>
+
+<!-- RELATED -->
+{% if related %}
+<section class="detail-extra-section">
+    <h2 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:32px;">You May Also
+        Love</h2>
+    <div class="prod-grid">
+        {% for p in related %}
+        <div class="prod-card">
+            <div class="prod-img">
+                {% if p.image_filename %}<img src="{{ url_for('static', filename='images/' + p.image_filename) }}"
+                    alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                {% else %}<div class="prod-bg" style="background:#F7F7F7;"></div>
+                <div
+                    style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:10px;letter-spacing:1px;text-transform:uppercase;">
+                    No Image</div>
+                {% endif %}
+                <div class="prod-hover-overlay"><a href="{{ url_for('shop.product_detail', slug=p.slug) }}"
+                        class="overlay-btn">View Details</a></div>
+            </div>
+            <div class="prod-info">
+                <a href="{{ url_for('shop.product_detail', slug=p.slug) }}" style="text-decoration:none;color:inherit;">
+                    <div class="prod-name">{{ p.name }}</div>
+                    <div class="prod-sub">{{ p.subtitle }}</div>
+                </a>
+                <div class="prod-bottom">
+                    <div class="prod-price">Rs. {{ p.price|int }}</div>
+                    <div class="stars-sm">{{ p.star_display }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    // Add to cart AJAX
+    document.getElementById('addToCartForm')?.addEventListener('submit', async e => {
+        e.preventDefault();
+        const r = await fetch(e.target.action, { method: 'POST', body: new FormData(e.target), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const d = await r.json();
+        if (d.success) { const b = document.getElementById('cartBadge'); if (b) b.textContent = d.cart_count; }
+    });
+    // Star rating
+    let rating = 0;
+    document.querySelectorAll('.star').forEach(s => {
+        s.addEventListener('mouseover', () => {
+            const v = +s.dataset.v;
+            document.querySelectorAll('.star').forEach((st, i) => st.style.color = i < v ? '#C4736A' : '#E5E5E5');
+        });
+        s.addEventListener('click', () => {
+            rating = +s.dataset.v;
+            document.getElementById('ratingInput').value = rating;
+            document.querySelectorAll('.star').forEach((st, i) => st.style.color = i < rating ? '#C4736A' : '#E5E5E5');
+        });
+    });
+    // Review form
+    document.getElementById('reviewForm')?.addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!rating) { alert('Please select a rating.'); return; }
+        const r = await fetch('{{ url_for("shop.add_review", product_id=product.id) }}', {
+            method: 'POST', body: new FormData(e.target), headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const d = await r.json();
+        if (d.success) location.reload();
+    });
+    // Wishlist
+    document.getElementById('wishlistBtn')?.addEventListener('click', async () => {
+        const r = await fetch('{{ url_for("shop.toggle_wishlist", product_id=product.id) }}', {
+            method: 'POST', headers: {
+                'X-CSRFToken': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        });
+        const d = await r.json();
+        const btn = document.getElementById('wishlistBtn');
+        btn.textContent = d.in_wishlist ? '♥' : '♡';
+        btn.classList.toggle('active', d.in_wishlist);
+    });
+
+    // Gallery interaction
+    function changeMainImage(src, thumb) {
+        document.getElementById('mainImage').src = src;
+        document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+    }
+</script>
+{% endblock %}

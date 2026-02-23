@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block title %}Shopping Cart — ORIAL{% endblock %}
+{% block content %}
+{% if not items %}
+<div
+    style="margin-top:72px;min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px;">
+    <div style="font-size:64px;margin-bottom:24px;">🛍</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;margin-bottom:16px;">Your cart is
+        empty</h1>
+    <p style="color:var(--gray);margin-bottom:32px;">Discover our exquisite collection of handcrafted jewellery.</p>
+    <a href="{{ url_for('shop.products') }}" class="btn-black" style="gap:20px;"><span>Explore
+            Collection</span><span>→</span></a>
+</div>
+{% else %}
+<div class="cart-layout">
+    <div class="cart-items-side">
+        <h1 style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;margin-bottom:32px;">Your Cart
+            <span style="color:var(--gray);font-size:20px;">({{ items|length }})</span>
+        </h1>
+        {% for item in items %}
+        <div class="cart-item-row" id="cartRow{{ item.id }}">
+            <div class="cart-item-img">
+                {% if item.product.image_filename %}
+                <img src="{{ url_for('static', filename='images/' + item.product.image_filename) }}"
+                    alt="{{ item.product.name }}" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                <div class="cart-item-img-bg"
+                    style="background:#F7F7F7;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:8px;">
+                    No Image</div>
+                {% endif %}
+            </div>
+            <div>
+                <div class="cart-item-name">{{ item.product.name }}</div>
+                <div class="cart-item-sub">{{ item.product.subtitle }}</div>
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="updateQty({{ item.id }}, -1)">−</button>
+                    <input type="number" class="qty-input" value="{{ item.quantity }}" min="1"
+                        max="{{ item.product.stock }}" id="qty{{ item.id }}"
+                        onchange="setQty({{ item.id }}, this.value)">
+                    <button class="qty-btn" onclick="updateQty({{ item.id }}, 1)">+</button>
+                </div>
+                <button class="cart-item-remove" onclick="removeItem({{ item.id }})">REMOVE</button>
+            </div>
+            <div>
+                <div class="cart-item-price" id="price{{ item.id }}">Rs. {{ item.subtotal|int }}</div>
+                <div style="font-size:11px;color:var(--gray);text-align:right;">Rs. {{ item.product.price|int }} each
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div style="margin-top:32px;">
+            <a href="{{ url_for('shop.products') }}" class="btn-outline" style="gap:20px;display:inline-flex;">←
+                Continue Shopping</a>
+        </div>
+    </div>
+    <div class="cart-summary-side">
+        <div class="summary-title">Order Summary</div>
+        <div class="summary-row"><span>Subtotal</span><span id="summarySubtotal">Rs. {{ '%.2f'|format(subtotal)
+                }}</span>
+        </div>
+        <div class="summary-row"><span>Shipping{% if subtotal >= threshold %} <span
+                    style="color:var(--rose);font-size:10px;">FREE</span>{% endif %}</span><span id="summaryShipping">{%
+                if shipping == 0 %}Free{% else %}Rs. {{ '%.2f'|format(shipping) }}{% endif %}</span></div>
+        {% if discount_amount > 0 %}
+        <div class="summary-row" style="color:var(--rose);" id="discountRow"><span>Discount ({{ discount_code
+                }})</span><span>−Rs. {{ '%.2f'|format(discount_amount) }}</span></div>
+        {% else %}
+        <div class="summary-row" id="discountRow" style="display:none;color:var(--rose);"><span
+                id="discountLabel">Discount</span><span id="discountAmt"></span></div>
+        {% endif %}
+        <div class="summary-row" style="border-bottom:none;margin-top:8px;"><span
+                class="summary-total">Total</span><span class="summary-total" id="summaryTotal">Rs. {{
+                '%.2f'|format(total)
+                }}</span></div>
+
+        <!-- COUPON -->
+        <div id="couponSection">
+            {% if discount_code %}
+            <div
+                style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:12px;color:var(--rose);">
+                <span>✓ {{ discount_code }} applied</span>
+                <button onclick="removeCoupon()"
+                    style="background:none;border:none;cursor:pointer;color:var(--gray);font-size:11px;">Remove</button>
+            </div>
+            {% else %}
+            <div class="coupon-form">
+                <input type="text" class="coupon-input" id="couponInput" placeholder="DISCOUNT CODE">
+                <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+            </div>
+            <div id="couponMsg" style="font-size:11px;margin-top:-8px;margin-bottom:8px;"></div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('cart.checkout') }}" class="checkout-btn">Proceed to Checkout →</a>
+        <p id="freeShippingMsg"
+            style="font-size:11px;color:var(--gray);text-align:center;margin-bottom:16px;{% if subtotal >= threshold %}display:none;{% endif %}">
+            Add Rs. <span id="shippingRemaining">{{ '%.0f'|format(threshold - subtotal) }}</span> more for free
+            shipping!</p>
+        <p style="font-size:10px;color:var(--gray);text-align:center;margin-top:12px;letter-spacing:.5px;">🔒 Secure
+            checkout · SSL encrypted</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    const CSRF = '{{ csrf_token() }}';
+    async function updateQty(id, delta) {
+        const inp = document.getElementById('qty' + id);
+        const newQty = Math.max(1, +inp.value + delta);
+        inp.value = newQty;
+        await setQty(id, newQty);
+    }
+    async function setQty(id, qty) {
+        const fd = new FormData();
+        fd.append('quantity', qty); fd.append('csrf_token', CSRF);
+        const r = await fetch(`/cart/update/${id}`, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.success) {
+            // Sync input value with actual quantity accepted by backend
+            const inp = document.getElementById('qty' + id);
+            if (inp) inp.value = d.actual_quantity;
+
+            // Update individual item row subtotal
+            const itemPriceEl = document.getElementById('price' + id);
+            if (itemPriceEl) itemPriceEl.textContent = 'Rs. ' + Math.round(d.item_subtotal);
+
+            updateSummary(d);
+        }
+    }
+    async function removeItem(id) {
+        const fd = new FormData(); fd.append('csrf_token', CSRF);
+        const r = await fetch(`/cart/remove/${id}`, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.success) {
+            document.getElementById('cartRow' + id)?.remove();
+            if (d.cart_count === 0) {
+                location.reload();
+                return;
+            }
+            updateSummary(d);
+        }
+    }
+    function updateSummary(d) {
+        if (d.stock_limit_reached && typeof showToast === 'function') {
+            showToast('Only ' + d.actual_quantity + ' item(s) left in stock.', 'warning');
+        }
+
+        document.getElementById('summarySubtotal').textContent = 'Rs. ' + d.subtotal.toFixed(2);
+        document.getElementById('summaryShipping').textContent = d.shipping === 0 ? 'Free' : 'Rs. ' + d.shipping.toFixed(2);
+
+        // Update Free Shipping message
+        const fsMsg = document.getElementById('freeShippingMsg');
+        const fsRem = document.getElementById('shippingRemaining');
+        if (fsMsg && fsRem) {
+            if (d.subtotal >= d.threshold) {
+                fsMsg.style.display = 'none';
+            } else {
+                fsMsg.style.display = 'block';
+                fsRem.textContent = Math.round(d.threshold - d.subtotal);
+            }
+        }
+
+        const dr = document.getElementById('discountRow');
+        if (d.discount_amount > 0) {
+            dr.style.display = 'flex';
+            document.getElementById('discountAmt').textContent = '-Rs. ' + d.discount_amount.toFixed(2);
+            document.getElementById('discountLabel').textContent = 'Discount (' + d.discount_code + ')';
+        } else {
+            dr.style.display = 'none';
+        }
+
+        document.getElementById('summaryTotal').textContent = 'Rs. ' + d.total.toFixed(2);
+        const b = document.getElementById('cartBadge'); if (b) b.textContent = d.cart_count;
+    }
+    async function applyCoupon() {
+        const code = document.getElementById('couponInput')?.value;
+        if (!code) return;
+        const fd = new FormData(); fd.append('code', code); fd.append('csrf_token', CSRF);
+        const r = await fetch('/cart/apply-coupon', { method: 'POST', body: fd });
+        const d = await r.json();
+        const msg = document.getElementById('couponMsg');
+        if (d.success) {
+            msg.style.color = 'var(--rose)'; msg.textContent = d.message;
+            updateSummary(d);
+        } else {
+            msg.style.color = '#991b1b'; msg.textContent = d.message;
+        }
+    }
+    async function removeCoupon() {
+        const fd = new FormData(); fd.append('csrf_token', CSRF);
+        await fetch('/cart/remove-coupon', { method: 'POST', body: fd });
+        location.reload();
+    }
+</script>
+{% endblock %}

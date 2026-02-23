@@ -1,0 +1,56 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Users{% endblock %}
+{% block content %}
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Joined</th>
+                <th>Orders</th>
+                <th>Admin</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users.items %}
+            <tr>
+                <td><strong>{{ u.full_name }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td style="font-size:12px;">{{ u.created_at.strftime('%d %b %Y') }}</td>
+                <td>{{ u.orders|length }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('admin.toggle_admin', uid=u.id) }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" style="background:none;border:none;cursor:pointer;font-size:18px;"
+                            title="{{ 'Revoke admin' if u.is_admin else 'Make admin' }}">{{ '👑' if u.is_admin else '—'
+                            }}</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" action="{{ url_for('admin.toggle_user_active', uid=u.id) }}"
+                        style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="admin-btn {{ 'secondary' if u.is_active else 'danger' }}"
+                            style="font-size:11px;padding:3px 10px;">{{ 'Active' if u.is_active else 'Blocked'
+                            }}</button>
+                    </form>
+                </td>
+                <td>{{ u.email }}</td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="7" style="text-align:center;color:#9ca3af;padding:40px;">No users found</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if users.pages > 1 %}
+<div class="pagination" style="margin-top:16px;">
+    {% for p in users.iter_pages() %}{% if p %}<{% if p==users.page %}span class="current" {% else %}a
+        href="{{ url_for('admin.users', page=p) }}" {% endif %}>{{ p }}</{% if p==users.page %}span{% else %}a{% endif
+        %}>{% else %}<span>…</span>{% endif %}{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

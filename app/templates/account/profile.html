@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — ORIAL{% endblock %}
+{% block content %}
+<div class="account-layout">
+    <aside class="account-sidebar">
+        <div class="account-user-info">
+            <div class="account-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] if
+                current_user.last_name else '' }}</div>
+            <div><strong>{{ current_user.full_name }}</strong><br><span style="font-size:11px;color:var(--gray);">{{
+                    current_user.email }}</span></div>
+        </div>
+        <nav class="account-nav">
+            <a href="{{ url_for('account.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('account.orders') }}">Orders</a>
+            <a href="{{ url_for('account.wishlist') }}">Wishlist</a>
+            <a href="{{ url_for('account.profile') }}" class="active">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </nav>
+    </aside>
+    <div class="account-main">
+        <h1 style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;margin-bottom:32px;">Profile
+            Settings</h1>
+        <form method="post" action="{{ url_for('account.profile') }}" style="max-width:560px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" value="{{ current_user.first_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" value="{{ current_user.last_name or '' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" value="{{ current_user.email }}" required>
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" name="phone" value="{{ current_user.phone or '' }}" placeholder="+44 7700 123456">
+            </div>
+            <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin:28px 0 16px;">Default Address</h3>
+            <div class="form-group">
+                <label>Address Line 1</label>
+                <input type="text" name="address_line1" value="{{ current_user.address_line1 or '' }}">
+            </div>
+            <div class="form-group">
+                <label>Address Line 2</label>
+                <input type="text" name="address_line2" value="{{ current_user.address_line2 or '' }}">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" name="city" value="{{ current_user.city or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Postcode</label>
+                    <input type="text" name="postcode" value="{{ current_user.postcode or '' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Country</label>
+                <select name="country">
+                    {% for c in ['United Kingdom','United
+                    States','Canada','Australia','Germany','France','Other','Pakistan'] %}
+                    <option value="{{ c }}" {{ 'selected' if current_user.country==c }}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-black" style="gap:20px;margin-top:8px;"><span>Save
+                    Changes</span><span>→</span></button>
+        </form>
+
+        <hr style="border:none;border-top:1px solid var(--light-gray);margin:40px 0;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:20px;">Change
+            Password</h2>
+        <form method="post" action="{{ url_for('account.change_password') }}" style="max-width:400px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group"><label>Current Password</label><input type="password" name="current_password"
+                    required></div>
+            <div class="form-group"><label>New Password</label><input type="password" name="new_password" required>
+            </div>
+            <div class="form-group"><label>Confirm New Password</label><input type="password" name="confirm_password"
+                    required></div>
+            <button type="submit" class="btn-outline" style="gap:20px;">Change Password →</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

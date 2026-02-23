@@ -1,0 +1,105 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Dashboard — ORIAL Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<!-- STATS -->
+<div class="admin-stat-grid">
+    <div class="admin-stat-card">
+        <div class="label">Total Revenue</div>
+        <div class="value">Rs{{ '%.0f'|format(stats.revenue) }}</div>
+        <div class="sub">From {{ stats.orders }} orders</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="label">Active Products</div>
+        <div class="value">{{ stats.products }}</div>
+        <div class="sub">Across {{ stats.categories }} categories</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="label">Customers</div>
+        <div class="value">{{ stats.users }}</div>
+        <div class="sub">Registered accounts</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="label">Pending Orders</div>
+        <div class="value" style="{{ 'color:#f59e0b' if stats.pending_orders > 0 else '' }}">{{ stats.pending_orders }}
+        </div>
+        <div class="sub">Awaiting processing</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="label">Total Orders</div>
+        <div class="value">{{ stats.orders }}</div>
+        <div class="sub">All time</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="label">Categories</div>
+        <div class="value">{{ stats.categories }}</div>
+        <div class="sub">Active collections</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <!-- RECENT ORDERS -->
+    <div class="admin-card">
+        <h3>Recent Orders</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td><a href="{{ url_for('admin.order_detail', oid=order.id) }}">{{ order.order_number }}</a></td>
+                    <td>{{ order.shipping_name }}</td>
+                    <td>Rs{{ '%.0f'|format(order.total) }}</td>
+                    <td><span class="status-badge {{ order.status }}">{{ order.status }}</span></td>
+                </tr>
+                {% else %}<tr>
+                    <td colspan="4" style="text-align:center;color:#9ca3af;">No orders yet</td>
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+        <div style="margin-top:16px;"><a href="{{ url_for('admin.orders') }}" class="admin-btn secondary">View All
+                Orders →</a></div>
+    </div>
+
+    <!-- RECENT PRODUCTS -->
+    <div class="admin-card">
+        <h3>Recent Products</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in recent_products %}
+                <tr>
+                    <td><a href="{{ url_for('admin.edit_product', pid=p.id) }}">{{ p.name }}</a></td>
+                    <td>Rs{{ '%.0f'|format(p.price) }}</td>
+                    <td style="{{ 'color:#ef4444' if p.stock < 5 else '' }}">{{ p.stock }}</td>
+                </tr>
+                {% else %}<tr>
+                    <td colspan="3" style="text-align:center;color:#9ca3af;">No products yet</td>
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+        <div style="margin-top:16px;"><a href="{{ url_for('admin.new_product') }}" class="admin-btn primary">+ Add
+                Product</a></div>
+    </div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:8px;">
+    <a href="{{ url_for('admin.new_product') }}" class="admin-btn primary">+ New Product</a>
+    <a href="{{ url_for('admin.new_category') }}" class="admin-btn secondary">+ New Category</a>
+    <a href="{{ url_for('admin.new_discount') }}" class="admin-btn secondary">+ New Discount</a>
+    <a href="{{ url_for('admin.orders') }}" class="admin-btn secondary">View Orders</a>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Products{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <form method="get" style="display:flex;gap:0;">
+        <input type="text" name="q" value="{{ search }}" placeholder="Search products…"
+            style="padding:10px 14px;border:1px solid #d1d5db;border-right:none;font-size:13px;outline:none;width:280px;">
+        <button type="submit" class="admin-btn primary" style="border-radius:0;">Search</button>
+    </form>
+    <a href="{{ url_for('admin.new_product') }}" class="admin-btn primary">+ Add Product</a>
+</div>
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Featured</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products.items %}
+            <tr>
+                <td><strong>{{ p.name }}</strong><br><span style="color:#9ca3af;font-size:11px;">{{ p.subtitle }}</span>
+                </td>
+                <td>{{ p.category.name }}</td>
+                <td>{% if p.is_on_sale %}<s style="color:#9ca3af;">Rs. {{ p.original_price|int }}</s> {% endif %}Rs. {{
+                    p.price|int }}</td>
+                <td style="{{ 'color:#ef4444;' if p.stock < 5 else '' }}">{{ p.stock }}</td>
+                <td><span
+                        style="padding:3px 8px;font-size:10px;background:{{ '#d1fae5;color:#065f46' if p.is_active else '#fee2e2;color:#991b1b' }}">{{
+                        'Active' if p.is_active else 'Inactive' }}</span></td>
+                <td>{{ '⭐' if p.is_featured else '—' }}</td>
+                <td>
+                    <a href="{{ url_for('admin.edit_product', pid=p.id) }}" class="admin-btn secondary"
+                        style="margin-right:4px;">Edit</a>
+                    <button onclick="deleteProduct({{ p.id }}, this)" class="admin-btn danger">Delete</button>
+                </td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="7" style="text-align:center;color:#9ca3af;padding:40px;">No products found. <a
+                        href="{{ url_for('admin.new_product') }}">Add one?</a></td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if products.pages > 1 %}
+<div class="pagination" style="margin-top:16px;">
+    {% for p in products.iter_pages() %}
+    {% if p %}<{% if p==products.page %}span class="current" {% else %}a
+        href="{{ url_for('admin.products', page=p, q=search) }}" {% endif %}>{{ p }}</{% if p==products.page %}span{%
+        else %}a{% endif %}>
+    {% else %}<span>…</span>{% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    async function deleteProduct(id, btn) {
+        if (!confirm('Archive this product?')) return;
+        const r = await fetch(`/admin/products/${id}/delete`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+        });
+        if ((await r.json()).success) btn.closest('tr').remove();
+    }
+</script>
+{% endblock %}

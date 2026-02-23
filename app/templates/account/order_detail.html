@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Order {{ order.order_number }} — ORIAL{% endblock %}
+{% block content %}
+<div class="account-layout">
+    <aside class="account-sidebar">
+        <div class="account-user-info">
+            <div class="account-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] if
+                current_user.last_name else '' }}</div>
+            <div><strong>{{ current_user.full_name }}</strong><br><span style="font-size:11px;color:var(--gray);">{{
+                    current_user.email }}</span></div>
+        </div>
+        <nav class="account-nav">
+            <a href="{{ url_for('account.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('account.orders') }}" class="active">Orders</a>
+            <a href="{{ url_for('account.wishlist') }}">Wishlist</a>
+            <a href="{{ url_for('account.profile') }}">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </nav>
+    </aside>
+    <div class="account-main">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+            <h1 style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;">Order {{ order.order_number
+                }}</h1>
+            <span class="status-badge {{ order.status }}">{{ order.status }}</span>
+        </div>
+
+        {% if order.status in ['pending', 'confirmed'] %}
+        <div
+            style="background:var(--rose-pale);padding:20px;border:1px solid var(--rose);margin-bottom:32px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <div style="font-weight:700;color:var(--black);margin-bottom:4px;">Need to cancel?</div>
+                <div style="font-size:12px;color:var(--gray);">You can cancel this order as long as it hasn't been
+                    shipped.</div>
+            </div>
+            <form action="{{ url_for('account.cancel_order', order_number=order.order_number) }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline"
+                    style="color:var(--rose);border-color:var(--rose);background:white;padding:10px 20px;">Cancel
+                    Order</button>
+            </form>
+        </div>
+        {% endif %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;">
+            <div style="border:1px solid var(--light-gray);padding:24px;">
+                <h3
+                    style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:16px;">
+                    Order Details</h3>
+                <div style="font-size:13px;line-height:2;">
+                    <div><strong>Date:</strong> {{ order.created_at.strftime('%d %B %Y') }}</div>
+                    <div><strong>Payment:</strong> {{ order.payment_method|title }}</div>
+                    <div><strong>Status:</strong> {{ order.payment_status|title }}</div>
+                </div>
+            </div>
+            <div style="border:1px solid var(--light-gray);padding:24px;">
+                <h3
+                    style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:16px;">
+                    Shipping Address</h3>
+                <div style="font-size:13px;line-height:2;">
+                    <div>{{ order.shipping_name }}</div>
+                    <div>{{ order.shipping_address1 }}</div>
+                    {% if order.shipping_address2 %}<div>{{ order.shipping_address2 }}</div>{% endif %}
+                    <div>{{ order.shipping_city }}, {{ order.shipping_postcode }}</div>
+                    <div>{{ order.shipping_country }}</div>
+                </div>
+            </div>
+        </div>
+        <div style="border:1px solid var(--light-gray);margin-bottom:24px;">
+            <div style="padding:20px 24px;border-bottom:1px solid var(--light-gray);">
+                <h3 style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);">Ordered Items
+                </h3>
+            </div>
+            {% for item in order.items %}
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;{% if not loop.last %}border-bottom:1px solid var(--light-gray);{% endif %}">
+                <div>
+                    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;">{{
+                        item.product.name }}</div>
+                    <div style="font-size:11px;color:var(--gray);">{{ item.product.subtitle }} · Qty: {{ item.quantity
+                        }}</div>
+                </div>
+                <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Rs{{ item.subtotal|int
+                    }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <div style="max-width:300px;margin-left:auto;border:1px solid var(--light-gray);padding:24px;">
+            <div
+                style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid var(--light-gray);">
+                <span>Subtotal</span><span>Rs{{ order.subtotal|int }}</span>
+            </div>
+            <div
+                style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid var(--light-gray);">
+                <span>Shipping</span><span>{% if order.shipping_cost == 0 %}Free{% else %}Rs{{ order.shipping_cost }}{%
+                    endif %}</span>
+            </div>
+            {% if order.discount_amount > 0 %}
+            <div
+                style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:var(--rose);border-bottom:1px solid var(--light-gray);">
+                <span>Discount ({{ order.discount_code }})</span><span>-Rs{{ order.discount_amount|int }}</span>
+            </div>
+            {% endif %}
+            <div
+                style="display:flex;justify-content:space-between;padding:12px 0;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;">
+                <span>Total</span><span>Rs{{ order.total|int }}</span>
+            </div>
+        </div>
+        <div style="margin-top:24px;">
+            <a href="{{ url_for('account.orders') }}" class="btn-outline" style="gap:0;">← Back to Orders</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

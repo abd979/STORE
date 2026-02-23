@@ -1,0 +1,61 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Reviews{% endblock %}
+{% block content %}
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Customer</th>
+                <th>Rating</th>
+                <th>Review</th>
+                <th>Date</th>
+                <th>Approved</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reviews.items %}
+            <tr>
+                <td><a href="{{ url_for('shop.product_detail', slug=r.product.slug) }}" target="_blank">{{
+                        r.product.name }}</a></td>
+                <td>{{ r.author.full_name }}</td>
+                <td style="color:#f59e0b;">{{ '★' * r.rating }}{{ '☆' * (5-r.rating) }}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{% if r.title
+                    %}<strong>{{ r.title }}: </strong>{% endif %}{{ r.body }}</td>
+                <td style="font-size:12px;">{{ r.created_at.strftime('%d %b %Y') }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('admin.toggle_review', rid=r.id) }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="admin-btn {{ 'secondary' if r.is_approved else 'danger' }}"
+                            style="font-size:11px;padding:3px 10px;">{{ '✓ Approved' if r.is_approved else '✗ Hidden'
+                            }}</button>
+                    </form>
+                </td>
+                <td>
+                    <button onclick="deleteRev({{ r.id }}, this)" class="admin-btn danger">Delete</button>
+                </td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="7" style="text-align:center;color:#9ca3af;padding:40px;">No reviews yet</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if reviews.pages > 1 %}
+<div class="pagination" style="margin-top:16px;">
+    {% for p in reviews.iter_pages() %}{% if p %}<{% if p==reviews.page %}span class="current" {% else %}a
+        href="{{ url_for('admin.reviews', page=p) }}" {% endif %}>{{ p }}</{% if p==reviews.page %}span{% else %}a{%
+        endif %}>{% else %}<span>…</span>{% endif %}{% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+    async function deleteRev(id, btn) {
+        if (!confirm('Delete this review?')) return;
+        const r = await fetch(`/admin/reviews/${id}/delete`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' } });
+        if ((await r.json()).success) btn.closest('tr').remove();
+    }
+</script>
+{% endblock %}

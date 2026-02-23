@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed — ORIAL{% endblock %}
+{% block content %}
+<div class="confirmation">
+    <div class="confirmation-icon">✓</div>
+    <h1>Thank You!</h1>
+    <p style="font-size:14px;font-weight:500;color:var(--black);margin-bottom:4px;">Your order has been placed
+        successfully.</p>
+    <div class="order-num">Order {{ order.order_number }}</div>
+    <p>A confirmation will be sent to <strong>{{ order.shipping_email }}</strong>. Your jewellery will be lovingly
+        packaged and dispatched within 3–5 working days.</p>
+    <br>
+    <div class="confirmation-card">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--rose);margin-bottom:16px;">
+            Order Details</div>
+        {% for item in order.items %}
+        <div
+            style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--light-gray);font-size:13px;">
+            <span>{{ item.product.name }} × {{ item.quantity }}</span>
+            <span style="font-weight:500;">Rs. {{ item.subtotal|int }}</span>
+        </div>
+        {% endfor %}
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:13px;color:var(--gray);">
+            <span>Shipping</span><span>{% if order.shipping_cost == 0 %}Free{% else %}Rs{{
+                '%.2f'|format(order.shipping_cost) }}{% endif %}</span>
+        </div>
+        {% if order.discount_amount > 0 %}
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:13px;color:var(--rose);">
+            <span>Discount</span><span>−Rs. {{ '%.2f'|format(order.discount_amount) }}</span>
+        </div>
+        {% endif %}
+        <div class="confirmation-summary">
+            <span>Total</span><span>Rs. {{ '%.2f'|format(order.total) }}</span>
+        </div>
+    </div>
+    <div class="confirmation-action-buttons">
+        <a href="{{ url_for('account.orders') }}" class="btn-black" style="gap:20px;"><span>View My
+                Orders</span><span>→</span></a>
+        <a href="{{ url_for('shop.products') }}" class="btn-outline" style="gap:20px;"><span>Continue
+                Shopping</span><span>→</span></a>
+    </div>
+</div>
+{% endblock %}

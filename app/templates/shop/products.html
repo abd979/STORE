@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Shop — ORIAL Fine Jewellery{% endblock %}
+{% block content %}
+<div class="page-title-bar">
+    <div class="breadcrumb"><a href="{{ url_for('main.index') }}">Home</a> / Shop</div>
+    <h1>Our Collection</h1>
+    <p>{{ pagination.total }} handcrafted pieces</p>
+</div>
+<form class="search-bar" action="{{ url_for('shop.products') }}" method="get"
+    style="margin:0;padding:24px 40px 0;border-bottom:1px solid var(--light-gray);">
+    {% if active_category %}<input type="hidden" name="category" value="{{ active_category.slug }}">{% endif %}
+    <input type="text" name="q" class="search-input" placeholder="Search pieces, materials, gemstones…"
+        value="{{ search }}">
+    <button type="submit" class="search-btn">Search</button>
+</form>
+<div class="shop-layout">
+    <div class="shop-sidebar">
+        <h3>Categories</h3>
+        <div style="margin-bottom:32px;">
+            <a href="{{ url_for('shop.products') }}"
+                class="cat-filter-link {{ 'active' if not active_category else '' }}">
+                All Jewellery <span>{{ pagination.total }}</span>
+            </a>
+            {% for cat in categories %}
+            <a href="{{ url_for('shop.products', category=cat.slug) }}"
+                class="cat-filter-link {{ 'active' if active_category and active_category.id == cat.id else '' }}">
+                {{ cat.name }} <span>{{ cat.product_count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="sidebar-filter">
+            <label>Sort By</label>
+            <select onchange="window.location=this.value">
+                <option
+                    value="{{ url_for('shop.products', sort='newest', category=active_category.slug if active_category else '') }}"
+                    {{ 'selected' if sort=='newest' }}>Newest</option>
+                <option
+                    value="{{ url_for('shop.products', sort='price_asc', category=active_category.slug if active_category else '') }}"
+                    {{ 'selected' if sort=='price_asc' }}>Price: Low to High</option>
+                <option
+                    value="{{ url_for('shop.products', sort='price_desc', category=active_category.slug if active_category else '') }}"
+                    {{ 'selected' if sort=='price_desc' }}>Price: High to Low</option>
+                <option
+                    value="{{ url_for('shop.products', sort='name', category=active_category.slug if active_category else '') }}"
+                    {{ 'selected' if sort=='name' }}>Name A–Z</option>
+            </select>
+        </div>
+    </div>
+    <div class="shop-main">
+        <div class="shop-toolbar">
+            <span class="shop-count">Showing {{ products|length }} of {{ pagination.total }} pieces</span>
+            <select class="sort-select" onchange="window.location=this.value">
+                <option value="{{ url_for('shop.products', sort='newest') }}" {{ 'selected' if sort=='newest' }}>Newest
+                </option>
+                <option value="{{ url_for('shop.products', sort='price_asc') }}" {{ 'selected' if sort=='price_asc' }}>
+                    Price ↑</option>
+                <option value="{{ url_for('shop.products', sort='price_desc') }}" {{ 'selected' if sort=='price_desc'
+                    }}>Price ↓</option>
+            </select>
+        </div>
+        <div class="prod-grid">
+            {% for product in products %}
+            <div class="prod-card">
+                <div class="prod-img">
+                    {% if product.image_filename %}
+                    <img src="{{ url_for('static', filename='images/' + product.image_filename) }}"
+                        alt="{{ product.name }}"
+                        style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                    {% else %}
+                    <div class="prod-bg" style="background:#F7F7F7;"></div>
+                    <div
+                        style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:10px;letter-spacing:1px;text-transform:uppercase;">
+                        No Image</div>
+                    {% endif %}
+                    <div class="prod-badge-wrap">
+                        {% if product.badge %}<span
+                            class="badge {{ 'rose' if product.badge_color == 'rose' else '' }}">{{ product.badge
+                            }}</span>{% endif %}
+                    </div>
+                    <div class="prod-hover-overlay">
+                        <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="post"
+                            class="add-form-quick">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="overlay-btn primary">Add to Cart</button>
+                        </form>
+                        <a href="{{ url_for('shop.product_detail', slug=product.slug) }}" class="overlay-btn">View
+                            Details</a>
+                    </div>
+                </div>
+                <div class="prod-info">
+                    <a href="{{ url_for('shop.product_detail', slug=product.slug) }}"
+                        style="text-decoration:none;color:inherit;">
+                        <div class="prod-name">{{ product.name }}</div>
+                        <div class="prod-sub">{{ product.subtitle }}</div>
+                    </a>
+                    <div class="prod-bottom">
+                        <div class="prod-price">
+                            {% if product.is_on_sale %}<s style="color:var(--gray);font-size:14px">Rs{{
+                                product.original_price|int }}</s> {% endif %}
+                            Rs. {{ product.price|int }}
+                        </div>
+                        <div class="prod-rating">
+                            <div class="stars-sm">{{ product.star_display }}</div>
+                            <div class="rating-n">({{ product.review_count }})</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="grid-column:1/-1;padding:80px;text-align:center;color:var(--gray);">
+                <p style="font-size:48px;margin-bottom:16px;">💎</p>
+                <p style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;">No pieces found</p>
+                <p>Try a different search or <a href="{{ url_for('shop.products') }}" style="color:var(--rose);">browse
+                        all jewellery</a></p>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- PAGINATION -->
+        {% if pagination.pages > 1 %}
+        <div class="pagination" style="margin-top:40px;">
+            {% if pagination.has_prev %}
+            <a
+                href="{{ url_for('shop.products', page=pagination.prev_num, category=active_category.slug if active_category else '', sort=sort, q=search) }}">‹</a>
+            {% endif %}
+            {% for p in pagination.iter_pages() %}
+            {% if p %}
+            <{% if p==pagination.page %}span class="current" {% else %}a
+                href="{{ url_for('shop.products', page=p, category=active_category.slug if active_category else '', sort=sort, q=search) }}"
+                {% endif %}>{{ p }}</{% if p==pagination.page %}span{% else %}a{% endif %}>
+            {% else %}<span>…</span>{% endif %}
+            {% endfor %}
+            {% if pagination.has_next %}
+            <a
+                href="{{ url_for('shop.products', page=pagination.next_num, category=active_category.slug if active_category else '', sort=sort, q=search) }}">›</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.querySelectorAll('.add-form-quick').forEach(form => {
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) { btn.textContent = '…'; btn.disabled = true; }
+            try {
+                const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await res.json();
+                if (data.success) {
+                    const b = document.getElementById('cartBadge');
+                    if (b) b.textContent = data.cart_count;
+                    showToast(data.message || 'Added to cart!', 'success');
+                } else {
+                    showToast(data.error || 'Could not add to cart.', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error. Please try again.', 'error');
+            }
+            if (btn) { btn.textContent = 'Add to Cart'; btn.disabled = false; }
+        });
+    });
+</script>
+{% endblock %}

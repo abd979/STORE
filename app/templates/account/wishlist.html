@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Wishlist — ORIAL{% endblock %}
+{% block content %}
+<div class="account-layout">
+    <aside class="account-sidebar">
+        <div class="account-user-info">
+            <div class="account-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] if
+                current_user.last_name else '' }}</div>
+            <div><strong>{{ current_user.full_name }}</strong><br><span style="font-size:11px;color:var(--gray);">{{
+                    current_user.email }}</span></div>
+        </div>
+        <nav class="account-nav">
+            <a href="{{ url_for('account.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('account.orders') }}">Orders</a>
+            <a href="{{ url_for('account.wishlist') }}" class="active">Wishlist</a>
+            <a href="{{ url_for('account.profile') }}">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </nav>
+    </aside>
+    <div class="account-main">
+        <h1 style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;margin-bottom:32px;">My Wishlist
+            <span style="color:var(--gray);font-size:20px;">({{ items|length }})</span>
+        </h1>
+        {% if items %}
+        <div class="prod-grid">
+            {% for item in items %}
+            <div class="prod-card">
+                <div class="prod-img">
+                    {% if item.product.image_filename %}<img
+                        src="{{ url_for('static', filename='images/'+item.product.image_filename) }}"
+                        alt="{{ item.product.name }}"
+                        style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                    {% else %}
+                    <div class="prod-bg" style="background:#F7F7F7;"></div>
+                    <div
+                        style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:10px;letter-spacing:1px;text-transform:uppercase;">
+                        No Image</div>
+                    {% endif %}
+                    <div class="prod-hover-overlay">
+                        <form action="{{ url_for('cart.add_to_cart', product_id=item.product.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="overlay-btn primary">Add to Cart</button>
+                        </form>
+                        <a href="{{ url_for('shop.product_detail', slug=item.product.slug) }}" class="overlay-btn">View
+                            Details</a>
+                    </div>
+                </div>
+                <div class="prod-info">
+                    <a href="{{ url_for('shop.product_detail', slug=item.product.slug) }}"
+                        style="text-decoration:none;color:inherit;">
+                        <div class="prod-name">{{ item.product.name }}</div>
+                        <div class="prod-sub">{{ item.product.subtitle }}</div>
+                    </a>
+                    <div class="prod-bottom">
+                        <div class="prod-price">Rs{{ item.product.price|int }}</div>
+                        <form action="{{ url_for('shop.toggle_wishlist', product_id=item.product.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="wishlist-btn active" title="Remove from wishlist">♥</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:80px 0;">
+            <div style="font-size:48px;margin-bottom:16px;">♡</div>
+            <p style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;">Your wishlist is empty</p>
+            <p style="color:var(--gray);margin-bottom:24px;">Save pieces you love by clicking the heart icon.</p>
+            <a href="{{ url_for('shop.products') }}" class="btn-black" style="gap:20px;"><span>Browse
+                    Collection</span><span>→</span></a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

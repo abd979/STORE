@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ORIAL — Fine Jewellery{% endblock %}</title>
+  <meta name="description"
+    content="{% block meta_desc %}Fine jewellery handcrafted in London since 1997. Diamonds, sapphires, emeralds and more.{% endblock %}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="global-nav">
+    <div class="hamburger" id="navToggle">
+      <span></span>
+      <span></span>
+    </div>
+    <div class="nav-left">
+      <a href="{{ url_for('main.index') }}" class="nav-logo">ORI<span>A</span>L</a>
+      <ul class="nav-links">
+        {% for item in nav_items %}
+        <li><a href="{{ resolve_url(item.url) }}">{{ item.label }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="nav-right">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('shop.products') }}" class="nav-icon" title="Search">⊙</a>
+      <a href="{{ url_for('account.wishlist') }}" class="nav-icon" title="Wishlist">♡</a>
+      <a href="{{ url_for('cart.view_cart') }}" class="nav-icon" title="Cart">
+        🛍
+        <span class="cart-badge" id="cartBadge">0</span>
+      </a>
+      <a href="{{ url_for('account.dashboard') }}" class="nav-shop">My Account</a>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="nav-icon">♡</a>
+      <a href="{{ url_for('cart.view_cart') }}" class="nav-icon">🛍</a>
+      <a href="{{ url_for('auth.login') }}" class="nav-shop">Sign In →</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+      <a href="{{ url_for('main.index') }}" class="nav-logo">ORI<span>A</span>L</a>
+      <div class="mobile-menu-close" id="mobileMenuClose">×</div>
+    </div>
+    <div class="mobile-menu-content">
+      <ul class="mobile-nav-links">
+        {% for item in nav_items %}
+        <li><a href="{{ resolve_url(item.url) }}">{{ item.label }}</a></li>
+        {% endfor %}
+      </ul>
+      <div class="mobile-menu-footer">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('account.dashboard') }}" class="btn-black" style="width:100%;">My Account</a>
+        <a href="{{ url_for('auth.logout') }}"
+          style="display:block;text-align:center;margin-top:20px;font-size:11px;color:var(--gray);text-decoration:none;letter-spacing:1px;text-transform:uppercase;">Sign
+          Out</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn-black" style="width:100%;">Sign In</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- FLASH MESSAGES -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container" id="flashContainer">
+    {% for category, message in messages %}
+    <div class="flash-msg {{ category }}">
+      <span class="flash-close" onclick="this.parentElement.remove()">×</span>
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer"
+    style="position:fixed;top:88px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;">
+  </div>
+
+  {% block content %}{% endblock %}
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-col">
+        <a href="{{ url_for('main.index') }}" class="footer-logo">ORI<span>A</span>L</a>
+        <p class="footer-about">Fine jewellery handcrafted in London since 1997. Beauty, conscience, and exceptional
+          craft in every piece.</p>
+        <div class="footer-socials">
+          <a href="#" class="fsoc">ig</a>
+          <a href="#" class="fsoc">fb</a>
+          <a href="#" class="fsoc">pt</a>
+          <a href="#" class="fsoc">yt</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Shop</div>
+        <ul class="footer-links">
+          {% for item in nav_items %}
+          <li><a href="{{ resolve_url(item.url) }}">{{ item.label }}</a></li>
+          {% endfor %}
+          <li><a href="{{ url_for('shop.products', category='earrings') }}">Earrings</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Customer</div>
+        <ul class="footer-links">
+          <li><a href="{{ url_for('account.dashboard') }}">My Account</a></li>
+          <li><a href="{{ url_for('account.orders') }}">Orders & Returns</a></li>
+          <li><a href="#">Shipping Info</a></li>
+          <li><a href="#">Size Guide</a></li>
+          <li><a href="#">Care Guide</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="{{ url_for('main.our_story') }}">Our Story</a></li>
+          <li><a href="#">Sustainability</a></li>
+          <li><a href="#">Certifications</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Orial Fine Jewellery Ltd. Registered in England & Wales.</div>
+      <div class="footer-legal">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOAT BAR -->
+  <div class="float-bar" id="floatBar">
+    <span class="float-bar-text">✦ Free Pakistan-wide shipping on orders over Rs. 50,000 · Use code WELCOME10 for 10%
+      off</span>
+    <a href="{{ url_for('shop.products') }}" class="float-bar-link">Shop Now →</a>
+  </div>
+
+  <script>
+    // Scroll reveals
+    document.querySelectorAll('.reveal').forEach(el => {
+      new IntersectionObserver(([e]) => { if (e.isIntersecting) e.target.classList.add('in'); }, { threshold: 0.1 }).observe(el);
+    });
+    // Floating bar
+    const fb = document.getElementById('floatBar');
+    window.addEventListener('scroll', () => fb.classList.toggle('show', window.scrollY > 400));
+    // Flash auto-dismiss
+    setTimeout(() => {
+      document.querySelectorAll('.flash-msg').forEach(m => m.style.opacity = '0');
+      setTimeout(() => document.querySelectorAll('.flash-msg').forEach(m => m.remove()), 500);
+    }, 4000);
+    {% if current_user.is_authenticated %}
+    // Cart count
+    fetch('{{ url_for("cart.cart_count") }}')
+      .then(r => r.json())
+      .then(d => { const b = document.getElementById('cartBadge'); if (b) b.textContent = d.count; });
+    {% endif %}
+    // ── Toast notification ────────────────────────────────
+    function showToast(msg, type) {
+      const colors = { error: '#991b1b', warning: '#92400e', success: '#1a1a1a' };
+      const accents = { error: '#ef4444', warning: '#f59e0b', success: '#C4736A' };
+      const bg = colors[type] || colors.success;
+      const acc = accents[type] || accents.success;
+      const t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style, {
+        background: bg, color: 'white',
+        padding: '14px 20px', fontSize: '13px', letterSpacing: '.3px',
+        fontFamily: '"DM Sans",sans-serif',
+        borderLeft: '3px solid ' + acc,
+        pointerEvents: 'auto', cursor: 'pointer',
+        opacity: '0', transform: 'translateX(20px)',
+        transition: 'all .25s ease',
+        maxWidth: '320px', minWidth: '220px',
+        boxShadow: '0 4px 20px rgba(0,0,0,.25)'
+      });
+      document.getElementById('toastContainer').appendChild(t);
+      requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(0)'; });
+      const dismiss = () => {
+        t.style.opacity = '0'; t.style.transform = 'translateX(20px)';
+        setTimeout(() => t.remove(), 280);
+      };
+      t.addEventListener('click', dismiss);
+      setTimeout(dismiss, 3500);
+    }
+    // ── Mobile Menu ──────────────────────────────────────
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+
+    navToggle.addEventListener('click', () => {
+      mobileMenu.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+
+    mobileMenuClose.addEventListener('click', () => {
+      mobileMenu.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

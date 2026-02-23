@@ -1,0 +1,122 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}{{ 'Edit Product' if product else 'New Product' }}{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <a href="{{ url_for('admin.products') }}" class="admin-btn secondary">← Back to Products</a>
+</div>
+<form method="post" enctype="multipart/form-data" class="admin-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="admin-form-grid">
+        <div class="admin-form-group">
+            <label>Product Name *</label>
+            <input type="text" name="name" value="{{ product.name if product else '' }}" required>
+        </div>
+        <div class="admin-form-group">
+            <label>Subtitle (e.g. 18K Rose Gold · Diamond)</label>
+            <input type="text" name="subtitle" value="{{ product.subtitle if product else '' }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Price (Rs.) *</label>
+            <input type="number" name="price" step="0.01" value="{{ product.price if product else '' }}" required>
+        </div>
+        <div class="admin-form-group">
+            <label>Original Price (leave blank if not on sale)</label>
+            <input type="number" name="original_price" step="0.01"
+                value="{{ product.original_price if product and product.original_price else '' }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Stock Quantity *</label>
+            <input type="number" name="stock" value="{{ product.stock if product else 0 }}" required>
+        </div>
+        <div class="admin-form-group">
+            <label>SKU</label>
+            <input type="text" name="sku" value="{{ product.sku if product else '' }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Category *</label>
+            <select name="category_id" required>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {{ 'selected' if product and product.category_id==cat.id }}>{{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="admin-form-group">
+            <label>Badge Text (e.g. Bestseller, New, Limited, Sale)</label>
+            <input type="text" name="badge" value="{{ product.badge if product else '' }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Badge Color</label>
+            <select name="badge_color">
+                <option value="black" {{ 'selected' if not product or product.badge_color=='black' }}>Black</option>
+                <option value="rose" {{ 'selected' if product and product.badge_color=='rose' }}>Rose</option>
+            </select>
+        </div>
+        <div class="admin-form-group">
+            <label>Material</label>
+            <input type="text" name="material" value="{{ product.material if product else '' }}"
+                placeholder="18K Rose Gold">
+        </div>
+        <div class="admin-form-group">
+            <label>Material</label>
+            <input type="text" name="material" value="{{ product.material if product else '' }}"
+                placeholder="18K Rose Gold">
+        </div>
+        <div class="admin-form-group">
+            <label>Gemstone</label>
+            <input type="text" name="gemstone" value="{{ product.gemstone if product else '' }}"
+                placeholder="Natural Pink Diamond">
+        </div>
+        <div class="admin-form-group">
+            <label>Weight</label>
+            <input type="text" name="weight" value="{{ product.weight if product else '' }}" placeholder="3.2g">
+        </div>
+        <div class="admin-form-group">
+            <label>Dimensions</label>
+            <input type="text" name="dimensions" value="{{ product.dimensions if product else '' }}"
+                placeholder="Size 6 (resizable)">
+        </div>
+    </div>
+    <div class="admin-form-group">
+        <label>Description</label>
+        <textarea name="description" rows="4">{{ product.description if product else '' }}</textarea>
+    </div>
+    <div class="admin-form-group">
+        <label>Gallery Images (Upload multiple)</label>
+        <input type="file" name="gallery_images" accept="image/*" multiple>
+        {% if product and product.gallery_images %}
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:12px;">
+            {% for img in product.gallery_images %}
+            <div style="position:relative;border:1px solid var(--light-gray);padding:4px;">
+                <img src="{{ url_for('static', filename='images/'+img.filename) }}"
+                    style="width:100%;aspect-ratio:1;object-fit:cover;" alt="Gallery image">
+                <label style="display:block;margin-top:4px;font-size:10px;color:#ef4444;cursor:pointer;">
+                    <input type="checkbox" name="delete_image_ids" value="{{ img.id }}"> Delete
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="admin-form-group">
+        <label>Product Image</label>
+        <input type="file" name="image" accept="image/*">
+        {% if product and product.image_filename %}
+        <div style="margin-top:8px;"><img src="{{ url_for('static', filename='images/'+product.image_filename) }}"
+                style="height:80px;border:1px solid #e5e7eb;" alt="Current image"><br><small
+                style="color:#9ca3af;">Current image. Upload new to replace.</small></div>
+        {% endif %}
+    </div>
+    <div style="display:flex;gap:24px;margin-top:8px;">
+        <label class="check-toggle"><input type="checkbox" name="is_active" {{ 'checked' if not product or
+                product.is_active }}> Active (visible in store)</label>
+        <label class="check-toggle"><input type="checkbox" name="is_featured" {{ 'checked' if product and
+                product.is_featured }}> Featured on Homepage</label>
+    </div>
+    <div style="margin-top:24px;display:flex;gap:12px;">
+        <button type="submit" class="admin-btn primary" style="padding:12px 32px;">{{ 'Save Changes' if product else
+            'Create Product' }}</button>
+        <a href="{{ url_for('admin.products') }}" class="admin-btn secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

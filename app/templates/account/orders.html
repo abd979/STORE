@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}My Orders — ORIAL{% endblock %}
+{% block content %}
+<div class="account-layout">
+    <aside class="account-sidebar">
+        <div class="account-user-info">
+            <div class="account-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] if
+                current_user.last_name else '' }}</div>
+            <div><strong>{{ current_user.full_name }}</strong><br><span style="font-size:11px;color:var(--gray);">{{
+                    current_user.email }}</span></div>
+        </div>
+        <nav class="account-nav">
+            <a href="{{ url_for('account.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('account.orders') }}" class="active">Orders</a>
+            <a href="{{ url_for('account.wishlist') }}">Wishlist</a>
+            <a href="{{ url_for('account.profile') }}">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </nav>
+    </aside>
+    <div class="account-main">
+        <h1 style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;margin-bottom:32px;">My Orders
+        </h1>
+        {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+            <div class="order-row">
+                <div class="order-header">
+                    <div class="order-meta">
+                        <div class="order-no">{{ order.order_number }}</div>
+                        <div class="order-date">Placed {{ order.created_at.strftime('%d %B %Y') }}</div>
+                    </div>
+                    <div class="order-actions">
+                        <span class="order-price">Rs{{ order.total|int }}</span>
+                        <span class="status-badge {{ order.status }}">{{ order.status }}</span>
+                        {% if order.status in ['pending', 'confirmed'] %}
+                        <form action="{{ url_for('account.cancel_order', order_number=order.order_number) }}"
+                            method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?');"
+                            style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn-outline"
+                                style="font-size:11px;padding:8px 16px;color:var(--rose);border-color:var(--rose);">Cancel</button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ url_for('account.order_detail', order_number=order.order_number) }}"
+                            class="btn-outline" style="font-size:11px;padding:8px 16px;">Details →</a>
+                    </div>
+                </div>
+                <div class="order-items-preview">
+                    {% for item in order.items[:3] %}
+                    <div class="order-item-tag">
+                        {{ item.product.name }} × {{ item.quantity }}
+                    </div>
+                    {% endfor %}
+                    {% if order.items|length > 3 %}
+                    <div class="order-item-tag" style="color:var(--gray);">+{{
+                        order.items|length - 3 }} more</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:80px 0;">
+            <div style="font-size:48px;margin-bottom:16px;">📦</div>
+            <p style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;">No orders yet</p>
+            <p style="color:var(--gray);margin-bottom:24px;">Your orders will appear here once you make a purchase.</p>
+            <a href="{{ url_for('shop.products') }}" class="btn-black" style="gap:20px;"><span>Start
+                    Shopping</span><span>→</span></a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

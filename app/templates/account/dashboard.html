@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}My Account — ORIAL{% endblock %}
+{% block content %}
+<div class="account-layout">
+    <aside class="account-sidebar">
+        <div class="account-user-info">
+            <div class="account-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] if
+                current_user.last_name else '' }}</div>
+            <div><strong>{{ current_user.full_name }}</strong><br><span style="font-size:11px;color:var(--gray);">{{
+                    current_user.email }}</span></div>
+        </div>
+        <nav class="account-nav">
+            <a href="{{ url_for('account.dashboard') }}"
+                class="{{ 'active' if request.endpoint == 'account.dashboard' }}">Dashboard</a>
+            <a href="{{ url_for('account.orders') }}" class="{{ 'active' if 'order' in request.endpoint }}">Orders</a>
+            <a href="{{ url_for('account.wishlist') }}"
+                class="{{ 'active' if 'wishlist' in request.endpoint }}">Wishlist</a>
+            <a href="{{ url_for('account.profile') }}"
+                class="{{ 'active' if 'profile' in request.endpoint }}">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </nav>
+    </aside>
+    <div class="account-main">
+        <h1 style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;margin-bottom:32px;">Welcome
+            back, {{ current_user.first_name }}</h1>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
+            <div style="border:1px solid var(--light-gray);padding:24px;text-align:center;">
+                <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;">{{ order_count }}
+                </div>
+                <div
+                    style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px;">
+                    Total Orders</div>
+            </div>
+            <div style="border:1px solid var(--light-gray);padding:24px;text-align:center;">
+                <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;">{{ wishlist_count }}
+                </div>
+                <div
+                    style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px;">
+                    Wishlist Items</div>
+            </div>
+            <div style="border:1px solid var(--light-gray);padding:24px;text-align:center;">
+                <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;">{{ pending_count }}
+                </div>
+                <div
+                    style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px;">
+                    Pending Orders</div>
+            </div>
+        </div>
+        {% if recent_orders %}
+        <h2 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:16px;">Recent
+            Orders</h2>
+        <div style="border:1px solid var(--light-gray);">
+            {% for order in recent_orders %}
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;padding:16px;{% if not loop.last %}border-bottom:1px solid var(--light-gray);{% endif %}">
+                <div>
+                    <div style="font-weight:500;font-size:13px;">{{ order.order_number }}</div>
+                    <div style="font-size:11px;color:var(--gray);">{{ order.created_at.strftime('%d %b %Y') }} · {{
+                        order.items|length }} item{{ 's' if order.items|length != 1 }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Rs{{
+                        order.total|int }}</span>
+                    <span class="status-badge {{ order.status }}"
+                        style="padding:4px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;">{{
+                        order.status }}</span>
+                    <a href="{{ url_for('account.order_detail', order_number=order.order_number) }}" class="btn-outline"
+                        style="font-size:11px;padding:8px 16px;">View →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

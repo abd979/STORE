@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin — ORIAL{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-logo">
+                <a href="{{ url_for('admin.dashboard') }}">ORI<span>A</span>L</a>
+                <small>Admin Panel</small>
+            </div>
+            <nav class="admin-nav">
+                <div class="admin-nav-section">Overview</div>
+                <a href="{{ url_for('admin.dashboard') }}"
+                    class="{{ 'active' if request.endpoint == 'admin.dashboard' }}">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+
+                <div class="admin-nav-section">Catalogue</div>
+                <a href="{{ url_for('admin.products') }}" class="{{ 'active' if 'product' in request.endpoint }}">
+                    <span class="icon">💎</span> Products
+                </a>
+                <a href="{{ url_for('admin.categories') }}" class="{{ 'active' if 'categor' in request.endpoint }}">
+                    <span class="icon">🗂</span> Categories
+                </a>
+
+                <div class="admin-nav-section">Sales</div>
+                <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if 'order' in request.endpoint }}">
+                    <span class="icon">📦</span> Orders
+                </a>
+                <a href="{{ url_for('admin.discounts') }}" class="{{ 'active' if 'discount' in request.endpoint }}">
+                    <span class="icon">🏷</span> Discounts
+                </a>
+
+                <div class="admin-nav-section">Community</div>
+                <a href="{{ url_for('admin.users') }}" class="{{ 'active' if 'user' in request.endpoint }}">
+                    <span class="icon">👥</span> Users
+                </a>
+                <a href="{{ url_for('admin.reviews') }}" class="{{ 'active' if 'review' in request.endpoint }}">
+                    <span class="icon">⭐</span> Reviews
+                </a>
+                <a href="{{ url_for('admin.newsletter_list') }}"
+                    class="{{ 'active' if 'newsletter' in request.endpoint }}">
+                    <span class="icon">📧</span> Newsletter
+                </a>
+
+                <div class="admin-nav-section">Config</div>
+                <a href="{{ url_for('admin.navigation') }}" class="{{ 'active' if 'navigation' in request.endpoint }}">
+                    <span class="icon">🗺</span> Navigation
+                </a>
+                <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if 'settings' in request.endpoint }}">
+                    <span class="icon">⚙</span> Settings
+                </a>
+                <a href="{{ url_for('main.index') }}">
+                    <span class="icon">🏠</span> View Store
+                </a>
+                <a href="{{ url_for('auth.logout') }}">
+                    <span class="icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="admin-main">
+            <div class="admin-topbar">
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="admin-topbar-right">
+                    <span style="font-size:12px;color:#6b7280;">Welcome, {{ current_user.first_name }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="admin-btn secondary">Logout</a>
+                </div>
+            </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div style="padding:16px 40px 0;">
+                {% for cat, msg in messages %}
+                <div class="flash-msg {{ cat }}" style="margin-bottom:8px;">{{ msg }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+            <div class="admin-content">{% block content %}{% endblock %}</div>
+        </div>
+    </div>
+</body>
+
+</html>

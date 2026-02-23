@@ -1,0 +1,56 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Discounts & Coupons{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+    <a href="{{ url_for('admin.new_discount') }}" class="admin-btn primary">+ Add Discount</a>
+</div>
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Min Order</th>
+                <th>Used / Max</th>
+                <th>Expires</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in discounts %}
+            <tr>
+                <td><strong style="font-family:monospace;">{{ d.code }}</strong></td>
+                <td>{{ d.discount_type }}</td>
+                <td>{% if d.discount_type == 'percentage' %}{{ d.value }}%{% else %}Rs{{ d.value }}{% endif %}</td>
+                <td>{% if d.min_order_amount %}Rs{{ d.min_order_amount }}{% else %}—{% endif %}</td>
+                <td>{{ d.used_count }}{% if d.max_uses %} / {{ d.max_uses }}{% else %} / ∞{% endif %}</td>
+                <td style="font-size:12px;">{% if d.expires_at %}{{ d.expires_at.strftime('%d %b %Y') }}{% else
+                    %}Never{% endif %}</td>
+                <td><span
+                        style="padding:3px 8px;font-size:10px;background:{{ '#d1fae5;color:#065f46' if d.is_active else '#fee2e2;color:#991b1b' }}">{{
+                        'Active' if d.is_active else 'Inactive' }}</span></td>
+                <td>
+                    <a href="{{ url_for('admin.edit_discount', did=d.id) }}" class="admin-btn secondary"
+                        style="margin-right:4px;">Edit</a>
+                    <button onclick="deleteDis({{ d.id }}, this)" class="admin-btn danger">Delete</button>
+                </td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="8" style="text-align:center;color:#9ca3af;padding:40px;">No discounts. <a
+                        href="{{ url_for('admin.new_discount') }}">Create one?</a></td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    async function deleteDis(id, btn) {
+        if (!confirm('Delete this discount?')) return;
+        const r = await fetch(`/admin/discounts/${id}/delete`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' } });
+        if ((await r.json()).success) btn.closest('tr').remove();
+    }
+</script>
+{% endblock %}

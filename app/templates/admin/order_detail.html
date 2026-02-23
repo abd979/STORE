@@ -1,0 +1,79 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Order {{ order.order_number }}{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <a href="{{ url_for('admin.orders') }}" class="admin-btn secondary">← Back to Orders</a>
+    <span class="status-badge {{ order.status }}" style="font-size:14px;padding:6px 16px;">{{ order.status }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+    <div class="admin-card">
+        <h3>Customer & Shipping</h3>
+        <p><strong>Name:</strong> {{ order.shipping_name }}</p>
+        <p><strong>Email:</strong> {{ order.shipping_email }}</p>
+        <p><strong>Phone:</strong> {{ order.shipping_phone or '—' }}</p>
+        <p><strong>Address:</strong> {{ order.shipping_address }}</p>
+        <p><strong>Payment:</strong> {{ order.payment_method }} — <span
+                style="color:{{ '#065f46' if order.payment_status == 'paid' else '#92400e' }}">{{ order.payment_status
+                }}</span></p>
+        {% if order.notes %}<p><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+    </div>
+    <div class="admin-card">
+        <h3>Order Info</h3>
+        <p><strong>Order #:</strong> {{ order.order_number }}</p>
+        <p><strong>Placed:</strong> {{ order.created_at.strftime('%d %b %Y %H:%M') }}</p>
+        <p><strong>Updated:</strong> {{ order.updated_at.strftime('%d %b %Y %H:%M') }}</p>
+        <p><strong>Subtotal:</strong> Rs. {{ '%.2f'|format(order.subtotal) }}</p>
+        <p><strong>Shipping:</strong> {% if order.shipping_cost == 0 %}Free{% else %}Rs. {{
+            '%.2f'|format(order.shipping_cost) }}{% endif %}</p>
+        {% if order.discount_amount > 0 %}<p><strong>Discount:</strong> −Rs. {{ '%.2f'|format(order.discount_amount) }}
+        </p>
+        {% endif %}
+        <p><strong>Total:</strong> <strong>Rs. {{ '%.2f'|format(order.total) }}</strong></p>
+    </div>
+</div>
+
+<div class="admin-card" style="margin-bottom:24px;">
+    <h3>Order Items</h3>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td><strong>{{ item.product.name }}</strong><br><span style="font-size:11px;color:#9ca3af">{{
+                        item.product.subtitle }}</span></td>
+                <td>Rs. {{ '%.2f'|format(item.unit_price) }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>Rs. {{ '%.2f'|format(item.subtotal) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="admin-card">
+    <h3>Update Order Status</h3>
+    <form method="post" action="{{ url_for('admin.update_order_status', oid=order.id) }}"
+        style="display:flex;gap:12px;align-items:center;margin-top:8px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <select name="status" style="padding:10px;border:1px solid #d1d5db;font-size:13px;">
+            {% for s in ['pending','confirmed','shipped','delivered','cancelled'] %}
+            <option value="{{ s }}" {{ 'selected' if order.status==s }}>{{ s.capitalize() }}</option>
+            {% endfor %}
+        </select>
+        <select name="payment_status" style="padding:10px;border:1px solid #d1d5db;font-size:13px;">
+            {% for s in ['pending','paid','failed','refunded'] %}
+            <option value="{{ s }}" {{ 'selected' if order.payment_status==s }}>{{ s.capitalize() }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="admin-btn primary">Update Status</button>
+    </form>
+</div>
+{% endblock %}

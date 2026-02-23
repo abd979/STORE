@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Site Settings{% endblock %}
+{% block content %}
+<form method="post" class="admin-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="admin-card" style="max-width:600px;">
+        <h3 style="margin-bottom:20px;">General Settings</h3>
+        {% for key, value in settings.items() %}
+        <div class="admin-form-group">
+            <label style="text-transform:capitalize;">{{ key.replace('_', ' ') }}</label>
+            <input type="text" name="{{ key }}" value="{{ value }}">
+        </div>
+        {% else %}
+        <p style="color:#9ca3af;">No settings configured yet.</p>
+        {% endfor %}
+        <div class="admin-form-group">
+            <label>Free Shipping Threshold (Rs.)</label>
+            <input type="number" name="free_shipping_threshold" step="0.01"
+                value="{{ settings.get('free_shipping_threshold', '200') }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Standard Shipping Cost (Rs.)</label>
+            <input type="number" name="shipping_cost" step="0.01" value="{{ settings.get('shipping_cost', '9.95') }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Store Name</label>
+            <input type="text" name="store_name" value="{{ settings.get('store_name', 'ORIAL Fine Jewellery') }}">
+        </div>
+        <div class="admin-form-group">
+            <label>Contact Email</label>
+            <input type="email" name="contact_email" value="{{ settings.get('contact_email', '') }}">
+        </div>
+        <button type="submit" class="admin-btn primary" style="margin-top:8px;">Save Settings</button>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — ORIAL{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-visual">
+        <div class="auth-visual-bg"></div>
+        <div class="auth-brand">
+            <span class="logo">ORI<span>A</span>L</span>
+            <p>Fine Jewellery · London Since 1997</p>
+            <br><br>
+            <svg width="200" height="240" viewBox="0 0 280 320" fill="none">
+                <ellipse cx="140" cy="255" rx="88" ry="28" fill="none" stroke="#1A1A1A" stroke-width="22" />
+                <ellipse cx="140" cy="225" rx="88" ry="28" fill="none" stroke="#444" stroke-width="22" />
+                <polygon points="140,50 198,120 140,148 82,120" fill="#C4736A" opacity=".9" />
+                <polygon points="140,50 198,120 140,100" fill="#D4948A" />
+                <polygon points="140,50 82,120 140,100" fill="#E8B5AF" />
+                <line x1="50" y1="65" x2="50" y2="42" stroke="#C4736A" stroke-width="2" stroke-linecap="round" />
+                <line x1="39" y1="54" x2="61" y2="54" stroke="#C4736A" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </div>
+    </div>
+    <div class="auth-form-side">
+        <div class="auth-form-wrap">
+            <h2>Welcome Back</h2>
+            <p>Sign in to your ORIAL account</p>
+            <form method="post" action="{{ url_for('auth.login') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="auth-input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="you@example.com" required>
+                </div>
+                <div class="auth-input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                <label
+                    style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);margin-bottom:8px;cursor:pointer;">
+                    <input type="checkbox" name="remember"> Remember me
+                </label>
+                <button type="submit" class="auth-submit">Sign In →</button>
+            </form>
+            <p class="auth-link">Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

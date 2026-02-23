@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block title %}ORIAL — Fine Jewellery Handcrafted in London{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-left">
+        <div class="geo-pattern"></div>
+        <div class="corner-tl hero-corner">Est. 1997 · London</div>
+        <div class="corner-br hero-corner">Fine Jewellery</div>
+        <svg class="hero-big-ring" width="420" height="420" viewBox="0 0 420 420" fill="none">
+            <circle cx="210" cy="210" r="200" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4 8" />
+            <circle cx="210" cy="210" r="170" stroke="#CCCCCC" stroke-width=".5" stroke-dasharray="2 6" />
+            <circle cx="210" cy="10" r="5" fill="#C4736A" opacity=".6" />
+            <circle cx="210" cy="410" r="5" fill="#C4736A" opacity=".6" />
+            <circle cx="10" cy="210" r="5" fill="#C4736A" opacity=".6" />
+            <circle cx="410" cy="210" r="5" fill="#C4736A" opacity=".6" />
+        </svg>
+        <svg class="hero-center-piece" width="280" height="320" viewBox="0 0 280 320" fill="none">
+            <ellipse cx="140" cy="255" rx="88" ry="28" fill="none" stroke="#1A1A1A" stroke-width="22" />
+            <ellipse cx="140" cy="225" rx="88" ry="28" fill="none" stroke="#444" stroke-width="22" />
+            <ellipse cx="140" cy="225" rx="88" ry="28" fill="none" stroke="white" stroke-width="4" opacity=".15" />
+            <line x1="68" y1="225" x2="80" y2="155" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round" />
+            <line x1="212" y1="225" x2="200" y2="155" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round" />
+            <polygon points="140,50 198,120 140,148 82,120" fill="#C4736A" opacity=".9" />
+            <polygon points="140,50 198,120 140,100" fill="#D4948A" opacity=".95" />
+            <polygon points="140,50 82,120 140,100" fill="#E8B5AF" opacity=".9" />
+            <polygon points="82,120 140,148 140,100" fill="#A05A52" opacity=".85" />
+            <polygon points="198,120 140,148 140,100" fill="#B86B62" opacity=".8" />
+            <line x1="50" y1="65" x2="50" y2="42" stroke="#C4736A" stroke-width="2" stroke-linecap="round" />
+            <line x1="39" y1="54" x2="61" y2="54" stroke="#C4736A" stroke-width="2" stroke-linecap="round" />
+        </svg>
+    </div>
+    <div class="hero-right">
+        <div class="eyebrow">
+            <div class="eyebrow-line"></div>
+            <div class="eyebrow-text">New Season 2025</div>
+        </div>
+        <h1 class="hero-h1">Where Stone<br>Meets<span class="italic">Soul.</span></h1>
+        <p class="hero-desc">Extraordinary jewellery for extraordinary women. Each piece is handcrafted in our London
+            studio by artisans who understand that true luxury lies in the details.</p>
+        <div class="hero-btns">
+            <a href="{{ url_for('shop.products') }}" class="btn-black"><span>Explore Collection</span><span>→</span></a>
+            <a href="{{ url_for('main.bespoke') }}" class="btn-outline"><span>Book a
+                    Consultation</span><span>↗</span></a>
+        </div>
+        <div class="hero-stats-row">
+            <div class="hero-stat">
+                <div class="hero-stat-n">28+</div>
+                <div class="hero-stat-l">Years crafting</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-n">4.9★</div>
+                <div class="hero-stat-l">Average rating</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-n">8k+</div>
+                <div class="hero-stat-l">Pieces created</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+    <div class="ticker-track" id="tickerTrack">
+        <span class="ticker-item">Free shipping over Rs. 50,000</span>
+        <span class="ticker-item">Conflict-free gemstones</span>
+        <span class="ticker-item">Lifetime warranty included</span>
+        <span class="ticker-item">Bespoke commissions open</span>
+        <span class="ticker-item">London-crafted since 1997</span>
+        <span class="ticker-item">30-day free returns</span>
+    </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="cat-strip reveal">
+    {% set cat_icons = {
+    'rings': '<svg width="48" height="52" viewBox="0 0 48 52" fill="none">
+        <ellipse cx="24" cy="40" rx="18" ry="6" fill="none" stroke="#0A0A0A" stroke-width="5" />
+        <ellipse cx="24" cy="34" rx="18" ry="6" fill="none" stroke="#555" stroke-width="5" />
+        <polygon points="24,8 35,22 24,27 13,22" fill="#C4736A" opacity=".85" />
+    </svg>',
+    'necklaces': '<svg width="48" height="52" viewBox="0 0 48 52" fill="none">
+        <path d="M8 8 Q24 22 40 8" stroke="#0A0A0A" stroke-width="3" fill="none" stroke-linecap="round" />
+        <path d="M8 8 Q4 28 16 40" stroke="#0A0A0A" stroke-width="3" fill="none" stroke-linecap="round" />
+        <path d="M40 8 Q44 28 32 40" stroke="#0A0A0A" stroke-width="3" fill="none" stroke-linecap="round" />
+        <polygon points="24,40 31,50 24,53 17,50" fill="#C4736A" opacity=".9" />
+    </svg>',
+    'bracelets': '<svg width="52" height="44" viewBox="0 0 52 44" fill="none">
+        <ellipse cx="26" cy="30" rx="22" ry="8" fill="none" stroke="#0A0A0A" stroke-width="5" />
+        <ellipse cx="26" cy="22" rx="22" ry="8" fill="none" stroke="#555" stroke-width="5" stroke-dasharray="6 4" />
+        <circle cx="26" cy="13" r="7" fill="#C4736A" opacity=".9" />
+    </svg>',
+    'earrings': '<svg width="44" height="52" viewBox="0 0 44 52" fill="none">
+        <circle cx="12" cy="10" r="6" fill="none" stroke="#0A0A0A" stroke-width="2.5" />
+        <circle cx="32" cy="10" r="6" fill="none" stroke="#0A0A0A" stroke-width="2.5" />
+        <line x1="12" y1="16" x2="12" y2="26" stroke="#0A0A0A" stroke-width="2.5" />
+        <line x1="32" y1="16" x2="32" y2="26" stroke="#0A0A0A" stroke-width="2.5" />
+        <polygon points="12,26 20,40 12,44 4,40" fill="#C4736A" opacity=".9" />
+        <polygon points="32,26 40,40 32,44 24,40" fill="#C4736A" opacity=".9" />
+    </svg>'
+    } %}
+    {% for cat in categories[:4] %}
+    <a href="{{ url_for('shop.products', category=cat.slug) }}" class="cat-item">
+        <div>
+            <div class="cat-num">0{{ loop.index }}</div>
+            <div class="cat-icon">{{ cat_icons.get(cat.slug, '') | safe }}</div>
+            <div class="cat-name">{{ cat.name }}</div>
+            <div class="cat-count">{{ cat.product_count }} pieces</div>
+        </div>
+        <div class="cat-arrow">→</div>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- FEATURED PRODUCTS -->
+<section class="featured reveal">
+    <div class="featured-sidebar">
+        <div>
+            <div class="section-num">02</div>
+            <div class="section-label">Featured Pieces</div>
+            <h2 class="section-title-left">Crafted for <em>You</em></h2>
+            <p class="section-desc-left">Each piece in this collection is made by hand, using only the finest ethically
+                sourced stones and metals.</p>
+        </div>
+        <div class="filter-tabs">
+            <div class="filter-tab active">All pieces</div>
+            {% for cat in categories %}
+            <div class="filter-tab">{{ cat.name }}</div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="featured-products">
+        {% for product in featured %}
+        <div class="prod-card">
+            <div class="prod-img">
+                {% if product.image_filename %}
+                <img src="{{ url_for('static', filename='images/' + product.image_filename) }}" alt="{{ product.name }}"
+                    style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+                {% else %}
+                <div class="prod-bg" style="background:#F7F7F7;"></div>
+                <div
+                    style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:10px;letter-spacing:1px;text-transform:uppercase;">
+                    No Image</div>
+                {% endif %}
+                <div class="prod-badge-wrap">
+                    {% if product.badge %}<span class="badge {{ 'rose' if product.badge_color == 'rose' else '' }}">{{
+                        product.badge }}</span>{% endif %}
+                </div>
+                <div class="prod-hover-overlay">
+                    <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="post"
+                        class="add-form-quick">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="overlay-btn primary">Add to Cart</button>
+                    </form>
+                    <a href="{{ url_for('shop.product_detail', slug=product.slug) }}" class="overlay-btn">Quick View</a>
+                </div>
+            </div>
+            <div class="prod-info">
+                <div class="prod-name">{{ product.name }}</div>
+                <div class="prod-sub">{{ product.subtitle }}</div>
+                <div class="prod-bottom">
+                    <div class="prod-price">
+                        {% if product.is_on_sale %}<s style="color:var(--gray);font-size:14px">Rs{{
+                            product.original_price|int }}</s> {% endif %}
+                        Rs. {{ product.price|int }}
+                    </div>
+                    <div class="prod-rating">
+                        <div class="stars-sm">{{ product.star_display }}</div>
+                        <div class="rating-n">({{ product.review_count }})</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto reveal">
+    <div class="manifesto-bg-text">ORIAL</div>
+    <div class="manifesto-inner">
+        <div class="manifesto-pre">Our Philosophy</div>
+        <blockquote class="manifesto-quote">"Jewellery is not decoration. It is <strong>memory made permanent</strong>,
+            love made visible, time made tangible."</blockquote>
+        <div class="manifesto-divider"></div>
+        <div class="manifesto-author">— Eleanor Marsh, Founder & Lead Artisan</div>
+        <a href="{{ url_for('main.our_story') }}" class="manifesto-cta">Read Our Story →</a>
+    </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process reveal">
+    <div class="process-header">
+        <h2 class="process-title">How We <em>Create</em></h2>
+        <p class="process-desc">Every piece follows a meticulous four-step process, ensuring perfection from first
+            sketch to final polish.</p>
+    </div>
+    <div class="process-steps">
+        {% for step in [('01','Design','We begin with hand-drawn sketches, exploring form, proportion, and
+        harmony.'),('02','Gemstone','We source only certified, conflict-free stones selected by
+        hand.'),('03','Craft','Master goldsmiths shape, set, and finish each piece entirely by
+        hand.'),('04','Deliver','Wrapped in our signature packaging with a certificate of authenticity.')] %}
+        <div class="step">
+            <div class="step-num">{{ step[0] }}</div>
+            <div class="step-name">{{ step[1] }}</div>
+            <div class="step-desc">{{ step[2] }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews reveal">
+    <div class="reviews-left">
+        <div class="reviews-big-num">4.9</div>
+        <div class="reviews-big-label">Average rating from 2,400+ reviews</div>
+        <div class="reviews-quote-mark">"</div>
+        <p class="reviews-featured-text">The most beautiful piece of jewellery I have ever owned. Wearing it feels like
+            carrying a tiny work of art.</p>
+        <div class="reviews-featured-author">— Claudia R., Verified Purchase</div>
+    </div>
+    <div class="reviews-right">
+        {% for r in [('James T. — London','I commissioned a bespoke engagement ring and the entire process was
+        seamless.'),('Priya M. — Manchester','The earrings arrived beautifully packaged and look even more stunning in
+        person.'),('Sarah K. — Edinburgh','Outstanding quality. My bracelet developed an issue and they repaired it free
+        of charge.')] %}
+        <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">{{ r[1] }}</p>
+            <div class="review-author">{{ r[0] }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter reveal">
+    <div>
+        <div class="nl-pre">Stay Connected</div>
+        <h2 class="nl-title">First Look at<br><em>New Collections</em></h2>
+    </div>
+    <div>
+        <form class="nl-form" action="{{ url_for('main.newsletter') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="nl-row">
+                <input type="email" name="email" class="nl-input" placeholder="Enter your email address" required>
+                <button type="submit" class="nl-btn">Subscribe</button>
+            </div>
+            <div class="nl-note">Join 18,000+ jewellery lovers. No spam, we promise.</div>
+            <div class="nl-perks">
+                <span class="nl-perk">Early access to drops</span>
+                <span class="nl-perk">Exclusive member discounts</span>
+                <span class="nl-perk">Style inspiration</span>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+    const t = document.getElementById('tickerTrack');
+    if (t) { t.innerHTML += t.innerHTML; }
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}Orders{% endblock %}
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    {% for s in ['', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] %}
+    <a href="{{ url_for('admin.orders', status=s) }}"
+        class="admin-btn {{ 'primary' if status == s else 'secondary' }}">{{ s.capitalize() or 'All' }}</a>
+    {% endfor %}
+</div>
+<div class="admin-card" style="padding:0;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders.items %}
+            <tr>
+                <td><a href="{{ url_for('admin.order_detail', oid=order.id) }}"><strong>{{ order.order_number
+                            }}</strong></a></td>
+                <td>{{ order.shipping_name }}<br><span style="color:#9ca3af;font-size:11px;">{{ order.shipping_email
+                        }}</span></td>
+                <td style="font-size:12px;">{{ order.created_at.strftime('%d %b %Y') }}</td>
+                <td>{{ order.items|length }}</td>
+                <td>Rs{{ '%.2f'|format(order.total) }}</td>
+                <td><span class="status-badge {{ order.status }}">{{ order.status }}</span></td>
+                <td><span
+                        style="font-size:11px;color:{{ '#065f46' if order.payment_status == 'paid' else '#92400e' }}">{{
+                        order.payment_status }}</span></td>
+                <td><a href="{{ url_for('admin.order_detail', oid=order.id) }}" class="admin-btn secondary">View</a>
+                </td>
+            </tr>
+            {% else %}<tr>
+                <td colspan="8" style="text-align:center;color:#9ca3af;padding:40px;">No orders found</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if orders.pages > 1 %}
+<div class="pagination" style="margin-top:16px;">
+    {% for p in orders.iter_pages() %}{% if p %}<{% if p==orders.page %}span class="current" {% else %}a
+        href="{{ url_for('admin.orders', page=p, status=status) }}" {% endif %}>{{ p }}</{% if p==orders.page %}span{%
+        else %}a{% endif %}>{% else %}<span>…</span>{% endif %}{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

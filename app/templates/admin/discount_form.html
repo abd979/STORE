@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html' %}
+{% block page_title %}{{ 'Edit Discount' if discount else 'New Discount' }}{% endblock %}
+{% block content %}
+<div style="margin-bottom:20px;"><a href="{{ url_for('admin.discounts') }}" class="admin-btn secondary">← Back</a></div>
+<form method="post" class="admin-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="admin-form-grid">
+        <div class="admin-form-group">
+            <label>Coupon Code *</label>
+            <input type="text" name="code" value="{{ discount.code if discount else '' }}"
+                style="text-transform:uppercase;" placeholder="WELCOME10" required>
+        </div>
+        <div class="admin-form-group">
+            <label>Discount Type *</label>
+            <select name="discount_type">
+                <option value="percentage" {{ 'selected' if not discount or discount.discount_type=='percentage' }}>
+                    Percentage (%)</option>
+                <option value="fixed" {{ 'selected' if discount and discount.discount_type=='fixed' }}>Fixed Amount (Rs)
+                </option>
+            </select>
+        </div>
+        <div class="admin-form-group">
+            <label>Discount Value *</label>
+            <input type="number" name="value" step="0.01" value="{{ discount.value if discount else '' }}"
+                placeholder="10" required>
+        </div>
+        <div class="admin-form-group">
+            <label>Minimum Order Amount (Rs)</label>
+            <input type="number" name="min_order_amount" step="0.01"
+                value="{{ discount.min_order_amount if discount else '' }}" placeholder="0">
+        </div>
+        <div class="admin-form-group">
+            <label>Max Uses (blank = unlimited)</label>
+            <input type="number" name="max_uses" value="{{ discount.max_uses if discount else '' }}" placeholder="100">
+        </div>
+        <div class="admin-form-group">
+            <label>Expiry Date (blank = no expiry)</label>
+            <input type="date" name="expires_at"
+                value="{{ discount.expires_at.strftime('%Y-%m-%d') if discount and discount.expires_at else '' }}">
+        </div>
+    </div>
+    <label class="check-toggle"><input type="checkbox" name="is_active" {{ 'checked' if not discount or
+            discount.is_active }}> Active</label>
+    <div style="margin-top:24px;display:flex;gap:12px;">
+        <button type="submit" class="admin-btn primary">{{ 'Save Changes' if discount else 'Create Discount' }}</button>
+        <a href="{{ url_for('admin.discounts') }}" class="admin-btn secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
